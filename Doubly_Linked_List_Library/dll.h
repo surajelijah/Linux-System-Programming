@@ -12,4 +12,4 @@ typedef struct dll_list_{
 dll_list* create_list();
 
 void insert(dll_list **dll,void* data);
-void print_list(dll_list *dll);
+
