@@ -1,0 +1,38 @@
+# 1 "file.c"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "file.c" Here the # 1 means in the file file.c at line number 1 it has found the start of a new file in this case it is B.h so it enters B.h
+# 1 "B.h" 1 Here the # 1 means that the at line number 1 it has found a start of a new file in this case it is A.h hence it enters the file A.h and the ending 1 means it has enterd the new file
+# 1 "A.h" 1 Here the # 1 means that at line number 1  and the ending 1 means it has entered the new file A.h
+
+
+int sum (int a,int b);
+# 2 "B.h" 2 Here the # 2 indicates the line number 2 in A.h file and the ending 2 tells that it has returned from A.h to B.h
+
+
+int multiply(int a,int b);
+# 2 "file.c" 2 Here the # 2 indicates the line number 2 in B.h file and the ending 2 tells that it has returned from B.h to file.c
+
+int main()
+{
+    int a,b,c;
+
+    c=(a>b)?a:b;
+
+    c=(a<b)?a:b;
+
+    return 0;
+}
+
+
+- Basically what happens is the text subsitution is done in recursive __WCHAR_TYPE__
+
+- First file.c sees B.h so it enters into B.h
+- Then in B.h it sees A.h so it enters into A.h
+- Then since in A.h there are no further #include directives all the content in it is copied directly copied or substituted in file.c that is the source file 
+
+- Once all the contents of the A.h are copied it returns to B.h and its contents are copied into file.c 
+- Then it returns to file.c 
+- Then all the other preprocessor directive like #define are subsitiuted
+
+- While the contents are being expanded some debugging information like the above will be added to the source file so as to direct to the appropriate file if any error occurs

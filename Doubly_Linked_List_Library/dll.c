@@ -30,6 +30,4 @@ void insert(dll_list** dll,void* data)
 }
 
 
- 
-
 	
