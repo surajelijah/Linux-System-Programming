@@ -1,0 +1,35 @@
+
+- Now before the compiler compiles the source files, the preprocessor does the text substitution
+- The C Preprocessor directives is simply a text substitution tool
+
+
+- Remember the Text Subsitution is performed before the compiler actually starts compilation of the source files
+    - Compilation starts on Translation Units
+    - Transalation Units are source files (.c files) after Preprocessor does Text Subsitution on them
+
+
+- Directives can be present in both the header files and the source files
+
+- The preprocessor performs preliminary operations on C and C++ files before they are passed to the compiler. 
+  You can use the preprocessor to conditionally compile code, insert files, specify compile-time error messages, 
+  and apply machine-specific rules to sections of code
+
+
+- #define 
+- #include
+- #undef
+- #ifdef - Returns true if the macro is defined
+- #ifndef - Reurns true if the macro is not defined
+- #if
+- #else
+- #elif
+- #endif 
+
+
+- #a - "a"
+- a##b - ab
+
+
+https://gcc.gnu.org/onlinedocs/cpp/
+https://en.cppreference.com/w/c/preprocessor
+https://docs.microsoft.com/en-us/cpp/preprocessor/c-cpp-preprocessor-reference

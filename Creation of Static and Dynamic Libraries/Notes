@@ -1,0 +1,193 @@
+- A Library is a collection of related Object Files ( Compiled Files)
+
+- How to create a library from .c source filec
+    - Now say we have A.c , B.c, C.c source files
+    - We compile them then we get A.o, B.o and C.o which are object files
+
+    - Then these .o files are bundled together to create one unit called a Library
+
+
+
+
+ Now in the C:\Projects\Udemy\Linux_System_Programming\Doubly_Linked_List_Library 
+
+ - We have dll.c which is a source file providing two functions
+ - Now we add another source file dll_utils.c with three functions in it
+ - Updated the dll.h with the functions and added the conditional preprocessor directives
+
+
+
+ - C/C++ source files can be compiled in two forms of Libraries on Linux Platforms
+ - Libraries are collection og compiled object files (.o files)
+
+
+- Now Linux C/C++ Libraries are of two types Static Libraries (.a) and Dynamic Libraries (.so)
+- Remember that a Library is a collection of object files even if it is Static Library or Dynamic Library
+
+
+
+- Steps to Crate Static Library
+
+    - Take the source files ( dll.c and dll_utils.c )
+    - Compile both the source files using  
+            - gcc -c -o dll.o dll.c
+            - gcc -c -o dll_utils.o dll_utils.c 
+    - Now we have the object files, now we have to bundle them together in one single Library file in the name libdll.a
+      ( We need to follow the convention in naming the Library that is lib<libraryname>.a )
+      ( In our case it is dll so libdll.a )
+      ( .a extension means it is a Static Library )
+
+
+    - Now to create a Static Library use the command
+
+            - ar rs libdll.a dll.o dll_utils.o
+                where 
+                    ar - archive command
+                    rs - flag
+            - ar rs nameoflibrary objectfiles
+
+
+$ cd Static\ Library\ Creation/
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation (master)
+$ ls
+dll.c  dll.h  dll_utils.c
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation (master)
+$ gcc -c -o dll.o dll.c && gcc -c -o dll_utils.o dll_utils.c
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation (master)
+$ ls
+dll.c  dll.h  dll.o  dll_utils.c  dll_utils.o
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation (master)
+$ ar rs libdll.a dll.o dll_utils.o
+C:\MinGW\bin\ar.exe: creating libdll.a
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation (master)
+$ ls
+dll.c  dll.h  dll.o  dll_utils.c  dll_utils.o  libdll.a
+
+
+- Steps to Create Dynamic Library
+
+    - Take the source files ( dll.c and dll_utils.c )
+    - Compile both the source files using  
+            - gcc -c -o dll.o -fPIC dll.c
+            - gcc -c -o dll_utils.o -fPIC dll_utils.c 
+            - PIC flag means Postion Independant Code
+
+    - Now we have the object files, now we have to bundle them together in one single Library file in the name libdll.so
+      ( We need to follow the convention in naming the Library that is lib<libraryname>.so )
+      ( In our case it is dll so libdll.so )
+      ( .so extension means it is a Dynamic Library )
+
+
+    - Now to create a Dynamic Library use the command
+
+            - gcc dll.o dll_utils.o -shared -o libdll.so
+                where 
+                    -shared - This is to tell that we are creating a shared object
+
+$ cd Dynamic\ Library\ Creation/
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Dynamic Library Creation (master)
+$ ls
+dll.c  dll.h  dll_utils.c
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Dynamic Library Creation (master)
+$ gcc -c -o dll.o -fPIC dll.c && gcc -c -o dll_utils.o -fPIC dll_utils.c
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Dynamic Library Creation (master)
+$ ls
+dll.c  dll.h  dll.o  dll_utils.c  dll_utils.o
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Dynamic Library Creation (master)
+$ gcc dll.o dll_utils.o -shared -o libdll.so
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Dynamic Library Creation (master)
+$ ls
+dll.c  dll.h  dll.o  dll_utils.c  dll_utils.o  libdll.so*
+
+
+
+
+https://www.youtube.com/watch?v=-dNsW2AOGYY&list=PLyqSpQzTE6M-q0Xgn0icEHvUS7WQxvenv 
+
+
+
+- Now let's see how to use the created Libraries and know what is Static Library and Dynamic Library
+
+https://www.youtube.com/watch?v=eW5he5uFBNM
+https://medium.com/@StueyGK/static-libraries-vs-dynamic-libraries-af78f0b5f1e4
+https://medium.com/@laura.derohan/everything-there-is-to-know-about-c-static-libraries-or-at-least-most-of-it-86c082ee41ff
+https://medium.com/@laura.derohan/the-differences-between-static-and-dynamic-libraries-70ef076877b5
+
+https://www.youtube.com/watch?v=v7DZl6q4QqA&list=PLVpAurZqkV65xG1dsDjHWIF9Em1d-vhnw
+
+- When we use functions from Static Libraries the Object file of where this function is present is inlcuded in the executable while linking
+  Static Library
+
+- When we use functions from the Dynamic Libraries the Object file where this function is present is not included in the executable but present
+  in other location where our executable jumps to for the function and returns 
+
+- Shared libraries are .so (or in Windows .dll, or in OS X .dylib) files. All the code relating to the library is in this file, and it is     
+  referenced by programs using it at run-time. A program using a shared library only makes reference to the code that it uses in the shared library.
+
+- Static libraries are .a (or in Windows .lib) files. All the code relating to the library is in this file, and it is directly linked into the 
+  program at compile time. A program using a static library takes copies of the code that it uses from the static library and makes it part of 
+  the program. [Windows also has .lib files which are used to reference .dll files, but they act the same way as the first one].
+
+
+- Using the Static Library while Linking and creating an execuatable
+
+  - Some developers wrote DLL Library and provided you dll.h and libdll.a ( or libdll.so )
+  - Remember that you do not have direct access to dll.c and dll_util.c, we are given the Library File
+
+  - Now we have application.c that is using the functions from the library, from dll.h we can see how to use the function
+
+
+  - Now we have application.c and libdll.a, now let's see how we create an executable
+
+
+    - gcc -c -o application.o application.c - We compile our application.c
+    - gcc application.o -o exe -L . -ldll
+
+              - -L is an option which gives where the Library is present (for us it is in the current directory so . )
+              - -lddl - it is the name of the Library with convention l<name of the library> to link
+    
+    - ./exe
+
+$ cd Using\ Static\ Library/
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation/Using Static Library (master)
+$ ls
+application.c  dll.h  libdll.a
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation/Using Static Library (master)
+$ gcc -c -o application.o application.c
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation/Using Static Library (master)
+$ gcc application.o -o a.exe -L . -ldll
+
+Elijah@LAPTOP-OB813S9V MINGW64 /c/Projects/Udemy/Linux_System_Programming/Creation of Static and Dynamic Libraries/Static Library Creation/Using Static Library (master)
+$ ls
+a.exe*  application.c  application.o  dll.h  libdll.a
+
+
+
+- Using the Dynamic Library while Linking and creating an executable 
+
+  - Now we have application.c and libdll.a, now let's see how we create an executable
+
+
+    - gcc -c -o application.o application.c - We compile our application.c
+    - Place the Library file in the default location /usr/lib and run the sudo ldconfig command or update LD_LIBRARY_PATH varaible with where  
+      the library is present 
+    - gcc application.o -o exe -ldll
+
+              - -lddl - it is the name of the Library with convention l<name of the library> to link
+    
+    - ./exe
+
+

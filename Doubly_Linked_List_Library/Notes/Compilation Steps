@@ -1,0 +1,17 @@
+
+# -c - this is just to compile a .c file and create an object file
+# -g - this is to add gdb flags
+# -Wall - used to let the compiler to even consider the warnings
+# -o - links and creates an output file mentioned with this
+
+// Compiling the source codes
+gcc -Wall -c dll.c
+gcc -Wall -c application.c
+
+//Linking the source codes and adding gdb flags
+gcc -g application.o dll.o -o exe
+
+//Note you can give any name other than 'exe' in the above command
+
+//Execution
+./exe

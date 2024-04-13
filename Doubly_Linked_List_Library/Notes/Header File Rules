@@ -1,0 +1,20 @@
+-   Header File contains :
+        - Anything which needs to be exposed to other source files
+            - Structure definitions
+            - Constants and Enumerations
+            - Macros
+            - Function Declarations (No Function Definitions)
+            - static inline functions (these do have definitions if you want)
+
+
+- Header files must be included in order to use them in any source file
+  and the related source file that has the definitions of the header file must be linked to the source code
+  that uses the header file
+
+
+- Header files actually says -
+    - Hey developer that here developer, I have the declaration of all these functions whose definitions is defined in some other source file, use them using the prototype or
+signatures that I am telling you. And yes, do not dare to see the internal implementation of these functions in source files. Also do link the the source file that contains these defintions 
+to the object file that uses this header file
+
+-A header file conveys that what is there to be used by you and you should not bother how it is done.

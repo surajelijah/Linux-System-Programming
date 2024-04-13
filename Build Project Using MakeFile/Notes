@@ -1,0 +1,77 @@
+- Makefile is a program building tool which runs on Unix, Linux and their flavors
+- It aids in simplifying building the software program that are dependant on various other libraries
+- Makefilecontaines all the commands required to build libraries or compile source files and create executables
+
+- Functions of Makefile
+    - Compile Source files
+    - Linking
+    - Creating required Libraries - Static or Dynamic
+    - Create required Executables
+    - Installation of the Libraries and Executables
+    - Update Dependancies
+
+
+Makefile 
+    - Input - Source Files, header Files and other precompiled Libraries and Object Files
+    - Output - Libraries and Executables and Installation 
+
+
+- Makefile works on the concept of dependancy tree
+
+
+
+- Now lets make a Makefile
+
+    - Now in this directory we have we have the tree structure  
+
+            $ ls -R .
+            .:
+            common_math/  complex_math/  main.c  Makefile  Makefile2  Notes  trig_math/
+
+            ./common_math:
+            common_math.c  common_math.h
+
+            ./complex_math:
+            complex_math.c  complex_math.h
+
+            ./trig_math:
+            trig_math.c  trig_math.h
+
+    - Now using the above source files and headers we are making a executable ( because whenever we have a main function in our source file
+        it means that we need to create an executable )
+
+    - Nowe we are creating a static library that includes the math related functions in libcalc.a and then an executable
+
+
+- In Makefile we write rules which have the following syntax as follows
+
+        - <What we want to prepare> : < What are the raw materials we need>
+            <Actions to prepare> 
+ 
+
+        See this line
+
+            ( target )  : (path to source files needed to prepare target)
+            common_math.o:common_math/common_math.c 
+            gcc -c -I common_math common_math/common_math.c -o common_math/common_math.o
+
+            - Remember that  -I is a flag that gives the path to the header files that are needed in the source files
+        
+        - We can create variables and use them in Makefile, basically the target is a varibale
+
+                    VariableName = Value
+
+                    Then we refer the varibale as $(VaribaleName)
+
+        - Variables are strings
+
+        - Order of rules is fine
+
+        - clean rule is to remove the files that are created
+
+        - Use tab not spaces
+
+        - Makefile uses DFS Algorithm on the rules
+
+
+https://makefiletutorial.com/

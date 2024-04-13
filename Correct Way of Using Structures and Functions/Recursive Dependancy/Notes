@@ -1,0 +1,120 @@
+- Recursive Dependancy
+
+Now let us understand Pointer Usage and Complete Usage for a Structure
+
+Consider the following Structure
+
+    struct emp_t {
+
+        char name[32];
+        unsigned int emp_id;
+        designation_t des;  // Complete Usage
+        occ_t *occ;         // Pointer Usage
+    }
+
+- The compiler compiles a structure when it is able to understand the size of the structure that is defined
+
+- Cosider that both designation_t and occ_t are defined properly
+
+- designation_t - Complete Usage - Here the designation_t is a structure that is being referred directly as a structure varibale des
+- occ_t - Pointer Usage - Here the occ_t is a structure that is being referred using a pointer to structure variable occ
+
+
+- Now let's see how the complies this structure
+    - To compile it the compiler must be able to know the size of the structure
+
+    - Now what is the size of the emp_t (padding bytes not included and consider machine is 32 bits means pointer varibale is 4bytes)
+                 - 32(name) + 4(emp_id) + 20(consider for des) + 4(occ pointer variable)
+    - So during compilation we were able to know the size of the structure so we the compiles the stucture
+
+
+
+- Now let's see what Recursive dependancy is
+    - Now consider the below two strucutures included in the same source file
+
+    struct emp_t{
+
+        char name[32];
+        unsinged int emp_id;
+        occ_t occ;
+    }
+
+    struct occ_t{
+
+        char designation[32];
+        unsigned int salary;
+        emp_t boss;
+    }
+
+- Now let's see how compiles the above two stuctures
+- Compiler always compiles from the top
+
+- Now we know that compiler compiles the structure if it is able to know it's size
+
+
+- Now when compiler encounters emp_t
+            - 32 + 4 + ( occ not known to compiler yet so compiler doesn't know it's size) 
+            - So now compiler doesn't know the size of emp_t
+
+- Now when compiler encounters occ_t
+            - 32 + 4 + ( Even though compiler knows about emp_t but it does not know the size )
+            - So now compiler doesn't know the size of the occ_t
+
+- So now compiler doesn't not compile the above strcutures
+
+- Now even if occ_t is put first and then emp_t, even then the compilers doesn't compile
+
+- This is because the emp_t and occ_t are dependant on each other to know each other's structures size ( Recursive Dependacy )
+
+--------------------------------------------SOLUTION------------------------------------------------------------------------------------
+
+- If you observe in the above Recursive depandanct we have used Complete Usage of Strucutres
+- So now we use something called as Forward Declaration
+    - Forrward Declaration means letting compiler know that the definition of the stucture would be provided but let us create a 
+      pointer variable of that structure type
+
+    struct occ_t; //Forward Declaration
+
+    struct emp_t{
+
+        char name[32];
+        unsinged int emp_id;
+        occ_t* occ;
+    }
+
+    struct occ_t{
+
+        char designation[32];
+        unsigned int salary;
+        emp_t boss;
+    }
+
+- Now we are able to know the size of emp_t and then occ_t, so now the compiler compiles the structures
+
+
+
+
+- Now remember that when compiler is able to calculate the size of the structure then compiler knows about the structure and
+  its definition if not the stucture is not know to the compiler
+
+- So we can think that we can use the Pointer usages in both the Dependant Structures , even then the compiler doesn't compile
+
+    - Here we are able to know the sizes but compiler does not compile
+    - This is because we cannot create a pointer to a stucture when the compiler do not know about the structure 
+
+    struct emp_t{
+
+        char name[32];
+        unsinged int emp_id;
+        occ_t* occ;
+    }
+
+    struct occ_t{
+
+        char designation[32];
+        unsigned int salary;
+        emp_t* boss;
+    }
+
+- So we include a Forward Declaration for occ_t to let the compiler know that the definition of this structure will be provided but
+  let us create a pointer of this type

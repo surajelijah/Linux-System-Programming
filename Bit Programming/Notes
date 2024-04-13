@@ -1,0 +1,141 @@
+- Every data type is stored in computer memory in bits
+
+char type - 1B
+uint16_t - 2B
+
+- Every byte in memory has an address ( basically it is every word in memory has an address)
+- We know the Bit Operations
+
+
+
+- Now let's see the XOR operation and use it in Doubly Linked List which are the XOR Lists
+
+
+- A->B->C 
+
+    A next= 0^B
+    B next= A^C
+- Now we can traverse in both the directions provided we store the previuos node in aother varible while traversing
+- But given some node in the Doubly Linked List we will not traverse in both the directions
+
+
+- Using Bits as Flags
+    - We can use a bit in a varible to see if it is true 
+ 
+        - Say we have a 1B variable - uint16_t data type - which a 2B variable so it has 16bits
+            - So we can use each bit to check for some condition
+
+                    - To set the bit in a flag   - flagvariable | (1<<bitnumber)
+                    - To check the bit in a flag - (1<<bitnumber)&flagvaraible > 0 then the bit is set and is true  
+
+
+- Using Enums as Bits
+    - We can use Enums like constants
+    - We can use Enums like bits
+
+                        typedef enum col_{
+
+                            GREEN - 1<<0,
+                            BLUE  - 1<<1,
+                            COL_MAX- 1<<2,
+                        }COL;
+
+    - Enums are basically names that are given to integral constants
+
+    - So when we say BLUE it means it is 1<<1 menas BLUE has value 2
+
+
+- Bit Pattern Matchin
+
+    Say we have a pattern 1PP1 where P can be 0 or 1
+
+    Input       Bit Pattern         
+
+    1101          1PP1          Match 
+    1110          1PP1          No Match
+    1101          1PP1          Match
+
+    - This Bit Pattern Matching is used in Networking or matching IP Addresses
+    - m-trie - A data structure based on bit pattern matching used to implement ACL's in Firewalls
+
+- Now let's see how is Bit Pattern Matching 
+
+
+        - Now given the Bit Pattern we need to get a mask and template
+
+            - Mask - Place all bits that needs to be matched with 1's and tthe P's with 0's
+            - Template - Place all P's with 0's
+        
+        - Say We have bit pattern 0000 10PP 10PP PPP0
+
+            - Mask - 1111 1100 1100 0001
+            - Template- 0000 1000 1000 0000
+
+        - So now we have to do is this 
+
+                            if(Input & Mask == Template)
+                                match
+                            else
+                                no match
+
+        - Now let see it on Bit pattern 1PP1
+
+            - Mask - 1001
+            - Template - 1001
+
+                - Input is 1110 
+                    - (Input & Mask ) - 1110 & 1001 - 1000 != 1001 ( Template ) - no match
+                - Input is 1101
+                    - (Input & Mask ) - 1101 & 1001 - 1001 == 1001 ( Template ) - match
+
+- So we can use this Bit Pattern Matching
+
+
+
+- BitMap - Array of Bits
+
+    - Now we can create an array and set the values to 0 or 1 but say we needed 27 bits then we assign an array 
+        - int arr[27] - size is 27 * 4B 
+    - But we needed 27 bits, so to create a bitmap we do not a have a data stucture in C 
+    - So we need to implement a data structure that can be a BitMap
+
+
+    - Memory is allocated in bytes
+    - So we need to create a API which work in the Byte Addressable memory but able to perfrom operations at bit level
+
+
+
+    - So say we needed a BitMap of 27 bits 
+
+            - So what we do is we get the memory using malloc where we accomodate the 27 bits
+            - So for 27 bits we do malloc(4) - 4B - 4*8 =32 , So we get 4B of memory and it has 4 address locations
+            - But we see the 4B to be a 32bit array
+            - So we use a char * pointer to address 1B location and then try to work the bits in it
+
+    
+    - So the structure
+
+                    typedef struct bitmap_{
+
+                            char* bit_arr;
+                            int arr_size;
+                    }bitmap_t;
+
+                - bits = 27
+                    - char array using malloc 4B 
+                    - Access Locations are from 0 to 27 bits
+
+                - To know how may bytes we require for malloc we use
+
+                        arr_size = bits/8;
+                        if(bits%8)
+                            arr_size+=1;
+                        
+                - Then create the structure
+
+                        bitmap_t* bitmap = (bitmap_t*)calloc(1,sizeof(bitmap_t))
+                        bitmap->bit_arr = (char*)calloc(arr_size,sizeof(char));
+                        bitmap->arr_size=arr_size
+
+
+- The Implementation is present in the BitMap directory in this directory

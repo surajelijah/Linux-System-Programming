@@ -1,0 +1,712 @@
+- Paging is the concept which is used to make the process
+  think that it has the complete Physical Memory for it's
+  execution, but actually the complete physical memory is
+  used by different processes
+  (Virtual Address Space, Virtual Memory and Paging are concepts that make the process think that it has the complete Physical Memory, but the process is divided into
+  pages and is mapped to Physical memory segments )
+
+
+- Paging allows the process to store it's data in
+  non contigous addresses in Physical Memory 
+  ( Remember that in Virtual Address Space data is stored in
+    contiguous way, but because we have a mapping from Pages to Segments we can store data in non-contiguous way )
+  (
+    Remember that the Virtual Address Space of a Process is 
+    made into Pages   
+  )
+ 
+ - Allows Mutiple Processes to use the same Physical Address
+   store it's data one process at a time
+   ( Say Process A's Page is mapped and loaded to Segement 1 in Physical Memory then when Process B comes into execution it can use the the Segement 1 when needed and load it's page, so Mutiple Process can use the same Physical Address, when Process A comes into execution it loads it's page into Segement 1 and starts it's execution,
+   but the Segement 1 can be loaded with one page of one process )
+
+- Paging is implemented using the hardware called MMU which
+  is Memory Management Unit
+
+
+- Byte Addressable Memory 
+
+    - This means every byte in Memory has an Address
+    - Byte is the fundamental unit of Memory that can be
+      accessed
+    - Virtual Memory and Physical Memory are byte Addressable
+      Memory
+
+- Word Addressable Memory 
+
+    - This means every Word in Memory has an Address
+    - A Word is a number of Bytes that the CPU can read and
+      write in the Physical Memory in one clock cycle
+
+
+    - Now say we have 4GB Physical Memory 
+
+        - Now 1 Word - 1 Byte
+
+                4GB - 2^32 Bytes
+
+                Now for each Byte we have a address so 
+
+                the Number of Addresses is - 2^32B / 1B
+                                           - 2^32 Addresses
+
+           the CPU generates Virtual Addresses which are
+            mapped to one of the 2^32 Physical Addresses
+
+           Now for one Physcial address from this range
+           It means that for one address number 1B of data is read from the Physical Memory 
+
+        - Now 1 Word - 4 Bytes
+
+                4GB - 2^32 Bytes
+
+                Now for 4 Bytes each we have a address so 
+
+                the Number of Addresses is  - 2^32B / 4B
+                                            - 2^30 Addresses
+
+            the CPU generates Virtual Addresses which are
+            mapped to one of the 2^30 Physical Addresses
+
+            Now for one Physcial address from this range
+            It means that for one address number 4B of data is read from the Physical Memory 
+
+- Word Addressable Memory and Byte Addressable Memory are
+  defined on Physical Memory, that is for each Physical Memory Address how many Bytes of Data is taken from the Physial Memory 
+
+
+- 32bit or 64bit Architectures
+
+    - 32bit system means
+
+        - The processes in execution have 2^32 Virtual
+          Addresses in it's process Virtual Address Space
+        - Addresses ( Virutal ) are 32 bit integers which 
+          identifies memory locations
+        - Size of Data bus is 32bits
+        - Size of Address bus is 32bits
+
+    - 64bit systems means
+
+        - The processes in execution have 2^64 Virtual
+          Addresses in it's process Virtual Address Space
+        - Addresses (Virtual ) are 64 bit integers which    
+          identifies memory locations
+        - Size of Data bus is 64bits
+        - Size of Address bus is 64bits
+        
+
+- Bus System
+
+    - A bus is a collection of Hard Metal Wires connecting
+      devices, used to transfer data from one device to other
+
+    - Each wire changes it's voltage level to represent a bit
+    
+    - Such a System of Metal Wires ( these are literal wires) 
+      permanently fabricated on a board connecting devices is called a Bus
+
+    - Say we have two devices Dev1 and Dev2, they communicate
+      using Bus System
+
+      - Dev1 - CPU and Dev2 - Physical Memory
+      - Dev1 - CPU and Dev2 - Hard Disk
+      - Dev1 - CPU and Dev2 - USB Port
+
+    - In Computer Architecture, different hardware components
+      transfer data with each other using buses
+
+    - Device1 sets the voltage levels accordingly which are
+      received by Device2 by the Bus and Device2 understands it in digital form, so this is how the devices communicate using Buses
+
+- CPU generates Virtual Addresses
+
+    - Variable in the programs are symbolic names of 
+      addresses ( Virtual ) where the variables value is stored
+
+    - Programs are in Machine code which has Virtual   
+      Addresses, variable names are represented with their
+      actual Virtual Address Locations
+
+    - These varibale are referred using the ebp register
+
+            int a=10; //local variable
+
+            //In assembly 
+            
+            mov %ebp-4,10
+
+            // Here say ebp address is 74 then a's address 
+               is 70
+
+    - Refer to the Slide No - 244 in ALPC - PPT
+
+    - Here CPU generates Virtual Addresses when the program
+      is in execution
+
+    - These Virtual Adddresses are then mapped to thier
+      Physical Addresses by MMU using the concept called
+      Paging
+
+    - CPU then gives the instruction to read data from and 
+      write data on the mapped physical addresses
+
+
+- Data Bus and Address Bus
+
+    - Now say we have CPU, MMU and Physical Memory
+
+    - Now we know that the CPU generates the Logical
+      Addresses which is the Virtual Address of the Process in execution
+
+      -  LA - Logical Address
+      -  PA - Physical Address
+
+    - Now say we CPU generated a Logical Address - 112, now
+      this is taken by MMU and is converted to Physical Address which the Address in the Physical memory, say 
+      Physical Address - 12 , means the LA - 112 is mapped to PA - 12
+
+    - Now the MMU has a Bus having 32 lines using which it
+      communiates with the Physical Memory, now MMU has PA
+      and PA is to know the address in the Physical Memory,
+      this bus is called Address Bus, the MMU sets each line accordingly of the 32 bits to identify the address in Physical Memory, Now the Physical Memory gets the PA from the Address Bus
+      ( Now remember we refer to 32 bit system so the Address
+        lines are 32 for each bit one line in the Bus
+            
+            - Basically if the PA is n bits then the Address
+              Bus should have n lines, means using the PA of n bits we can identify 2^n Addresses 
+              
+            - Now say we have PA - 48 bits , then we need to
+              have 48 lines and we 2^48 addresses in Phycsical Memory
+              
+                    - But how did we get this 48 bits, this 
+                      is wher hardware comes in
+                      
+                        - Say we have a Physical Memory of 
+                          2^48 Bytes and we say that
+                            1 Word - 1 Byte
+                            then we get 2^48 Addresses 
+                            
+                            
+            - So think from the Physical Memory and the how  
+              much is eacch Word then know the Adddress from which we know the Address lines
+              )
+    
+    - Now in 32bit system Physical Memory is byte Addressable
+      and 1 Word - 4B
+      
+    - So now Physical Memory has understood that PA - 12, now
+      the CPU gives the instruction to read data and write data in that address
+
+    - So when the CPU gives the instruction say it is read
+      then the CPU and the Physical Memory transfer data using a bus which is the Data Bus
+
+    - Now the Data Bus has 4 Buses each of 8 bits
+
+        4 Buses - 4 Bytes - 1 Word
+
+        - Each Bus for 1B of data from those 4 Bytes
+        - Data Bus - Bus 0 + Bus 1 + Bus 2 + Bus 3 = 32bits 
+
+    - Now we have PA - 12 
+
+        - So when we get the read instruction from CPU 
+
+            PA - 11 - Bus 0 
+            PA - 12 - Bus 1  
+            PA - 13 - Bus 2 
+            PA - 14 - BUs 3 
+
+            - We want to use the data on PA - 12 and PA - 13
+            - So data in the Physical Addresses are on thier 
+              Buses
+    - This data is transferred in a register in the CPU which
+      the CPU will use
+
+    - So if it is a write then the transfer will be from 
+      register to Physical Memory
+
+    ( Remember that Word defines how many bytes of data are
+      transferred using the Data Bus in one cpu clock cycle )
+
+    - Now say we have 
+
+            long var1= 112;
+
+            long takes 8B of that which is 2Words 
+            so in one clock cycle the Data Bus transfers 4B of data in the 32bit system
+
+            So 32bit system - takes 2 cpu clock cycles to
+                              store the data in Physical Memory
+
+            So 64bit system - take 1 cpu clock cycle to store
+                              the data in Physical Memory because 1Word - 8B
+
+
+- Now in 32bit system, we know that we have 32 bit address
+  lines, means PA - 32 bits and it means using this address lines we can address 2^32 address ( byte addressable )
+  where each address - 1B of data which is 2^32 Bytes - 4GB
+
+    - Now say we have installed another Physical Memory of 
+      4GB in the system 
+
+      So now the system has 8GB of Physical Memory, but 
+
+      to Address this 8GB of Physical Memory
+
+        PA - 33 bits measn Address line - 33
+
+    - But we have Address lines - 32 in our 32 bit machine, 
+      this means that the installed Physical Memory of 4GB 
+      will not be referred using the Address lines - 32
+      because 32 Address line can address 2^32Bytes - 4GB
+
+    - For the 32 bit systems to access the installed Physical
+      Memory it's Address line must be made - 33 and PA - 33
+      which is hardware change which is not usually done
+
+    - So for this we have the introduced the 64bit systems
+      where we have 
+
+        Address Lines - 64bits
+
+        which can address Physical Memory - 2^64Bytes - 2^32GB
+        ( byte addressable )
+
+    - Refer the picture Data Bus and Address Bus in this
+      directory
+
+
+    - Word Size - Number of Bytes a CPU can read and write in
+                  Physical Memory in one clock cycle
+
+        - 32 bit system , word size - 4B
+        - 64 bit system , word size - 8B
+        - Number of Metal Wires in Data Bus / 8 - Word Size
+                                                  in Bytes
+
+
+
+- Mapping of Virtual Addresses to Physical Addresses
+
+  - Now say we have a process in execution 
+  - Now the process executes the line
+
+        void *ptr = malloc(20); // This means the process is requesting 20bytes of memory
+
+        - So now in the Heap Memory of the Virtual Address Space the Memory is allocated and an address ( Virtual ) is assigned to ptr
+        - Say the Address pointed by ptr is 112 which is Logical Address in the Virtual Address Space of the Process
+
+  - Now the process executes the line
+
+        strncpy(ptr,"Hello",5); // This means we want to store the data Hello in the location pointed by the ptr which is in Heap Memory
+
+  - Now see what happens
+
+      - Now when this line is getting executed
+
+        - The LA - 112 of ptr is translated to it's PA say 12 by the MMU which is the Physical Address of ptr in the Physical Memory
+        - Now the data Hello is stored in the Physical Memory Address 12
+
+  - Remember that the actual data is not stored in the Virtual Address Space, Virtual Address Space and Virtual Memory is a concept, 
+    it is not Physical Memory where we can store data
+
+
+  - The actual data is stored in the Physical Memory, Virtual Memory do not contain data
+
+  - Now we have seen this in the Heap Memory of the Virtual Address Space, it is similar to the Stack Memory, Data Segments, Code Segment
+    of the Process Virtual Address Space
+
+  - So when we refer to an address in the Virtual Address Space using the Virtual Address then the MMU transaltes it into it's PA and then
+    the actual data is read and written on the Physical Address of the Physical Memory
+
+  - Refer to the picture Mapping of Virtual Address to Physical Address and the picture Analogy
+
+
+- Physical Pages and Frames
+
+    - Now say we have Physical Memory of 4GB which is byte Addressable and 1Word - 1B
+
+    - Now we fragment this Physical Memory in block of equal size, each block is called a Frame
+      ( Remember this frames are logical which are used by the operating system and MMU, there are no literal blocks on the Physical
+        Memory )
+
+    - Now the size of the Frame is 4KB usually in different architectures but we can change it
+
+    - Now the Physical Memory has 
+
+          - Number of Frames - 4GB / 4KB - 2^20 Frames
+
+    - Now in each Frame we put a Page of the Process ( Remember that the Process Virtual Address Space is fragmented in Pages )
+    - Now the Page of the Process when put in a Frame in Physical Memory it is called Physical Page of that Process because now the
+      Page when put in the Physical Memory Frame it has actual data of the Page in the Frame
+
+    - Frames are containers of Pages
+    - Frame Size in Physical Memory  = Page Size in the Virtual Adddress Space of the Process
+
+
+- Page Swapping
+
+    - Now we know that when a Virtual Address is referred then the Page where this Virtual Address is there needs to be put into a Frame
+      in Physical Memory and then the execution is done
+
+    - Now say the Frames in the Physical Memory have now occupied by Physical Pages
+
+    - Now a Process needs to put a Page in the Frame for it to execute, so what it does is that it would Swap an existing Page in the Frame
+      with the required Page in the Secondary Storage and executes
+
+    - Swap is the operation in which Physical Memory puts the page in one of it's frames to the secondary storage and load the other page
+      from secondary storage into the frame
+
+    - When Physical Memory do not have free frames then Swapping is performed
+
+    - Now Remember that say we have 2^20 Frames then it means we can put 2^20 Pages ( of different Processes ) into the Frames
+      ( Frames are containers for the Pages , Boundary checks are done in the MMU while translating )
+
+    - Swapping uses different Page Replacement Algorithms
+
+
+- Virtual Memory Pages
+
+    - Now we know that Process Virtual Address Space is fragmented into Pages, these are called Virtual Pages
+      ( Remember a Virtual Page when put in a Frame is called a Physical Page )
+
+    - So we know each Process has a VAS of 2^32 B , which is fragmented into pages of each size 4KB
+
+        - So now the number of Pages  - 2^32B / 4KB - 2^20 Pages
+
+    - 20 bits to refer to the page and 12 bits to refer to the byte in the page
+
+    - Refer the picture Virtual Memory Pages
+
+
+- Mapping between Physical and Virtual Page
+
+  - We have the analogy that Virtual Address is key and Physical Addresses are locker
+  - MMU tells which key is for which locker and each locker has a byte of data
+  - Virtual Page of 4KB has 2^12 keys  and each key opens a locker in Physical Memory which contains 1B of data, each VA gives access
+    to 1B of data in a Physical Address in Physical Memory
+  - Now we have a VA ( key ) then we have to have a PA ( locker ), so we have a Virtual PAge then there exists a corresponding Physical
+    Page ( Virtual Page contents put in a Frame, Remember Virtual Address Space contains Addresses not Data )
+
+      - Now say we have a Process, then it has a Process Virtual Address Space which is fragmented into Virtual Pages
+      - Now we know that we have a Code Segment in the Virtual Address Space ( this is concept ) where the code is said to be, but actual
+        code is not there in the Code Segment in the Virtual Address Space we have the Addresses for those instructions for the code
+        segment
+      - Now when the Process is created the contents of Code Segment are required to be present in the Physical Memory
+        so now a Physical Page is created by the Operating System corresponding to the Virtual Page in which the Code Segment is there
+      - Now the actual contents of the Code segment are there in the Physical Page, this is put in a Frame and then the process executes
+
+  - So every Process Virtual Page a Physical Page is created by OS, now this Physical Page is present in the Frame and swapped in the
+    secondary storage because this Physical Page has the actual data that the Virtual Page has to have
+
+  - Physical Pages are created and removed as process uses and frees corresponding virtual pages during the execution
+  - OS manages the Virtual Addresses, so when OS allocates or frees the Virtual Memory then a Physical Page is created and used
+  - Say we do malloc(10), if the Virtual Page in which Heap Memory of VAS is present can accomodate this 10bytes then a new Physical Page
+    is not created
+  - Physical Page is created when an address in a Virtual Page in VAS is referred during execution and is freed if the Virtual Page is not
+    needed
+ 
+  - Refer picture 1-1 Mapping between Physical and Virtual Page and picture 1-1 Mapping between Physical and Virtual Page-1
+
+
+- Virtual Address Composition
+
+  - Now in a 32bit system and with Page Size - 4KB
+  - We know that the no of Pages is 2^20 and  the we need 12 bits ( 2^12 Page Size ) to refer to a byte in a Page
+
+  - So when the CPU generates a LA of 32 bits,
+
+      20 bits - used for the page number
+      12 bits - used to refer to the byte in a page called offset
+
+
+- Page Table
+
+  - It is Data Structure that OS maintains for each process
+  - Page Table is used to map the Virtual Address of a Process's VAS to a Physical Address in Physical Memory
+
+  - Now say we have a Process which has 5 Virtual Pages, we know that for each Virtual Page we have a Physical Page which is put in a Frame
+    and needed is swapped in the secondary storage
+
+  - Now the  Page Table has the columns
+
+        Virtual Page    Physical Page      Frame
+           Number           Number         Number
+
+           0                  0              3
+           1                  1              5
+           2                  2              1
+           3                  3              2
+           4                  4              - ( No Frame Number means the Physical Page is in secondary storage )
+    
+  - Now usually Virtual Page Number and Physical Page Number are similar ( but when we discuss Shared Memory and Forking they are not  
+                                                                           similar )
+
+  - Number of entries in Page Table - Number of Pages in a Process  - 2^20
+  - Refer picture Page Table
+
+
+- Paging in Action
+
+  - Now say we have a system where
+
+    - Size of Virtual Address Space of a Process - 16B - 2^4B ( This is independant variable, we decide what this value will be )
+    - Virtual Address ( Logical Address ) - 4 bits ( Because VAS is 2^4B, so to refer each address in VAS we need 4bits )
+      ( So the CPU generates this Logical Address )
+
+    - Say we have Page Size - 4B
+    - So Number of Virtual Pages  - 16B / 4B - 4
+    - Number of bits to represent Virtual Page - 2 bits
+    - Number of bits to represent an address in a Virtual Page ( offset ) - 2bits
+
+    - Physical Memory Size - 32B ( This is independant variable, we decide what this value will be )
+    - Number of Frames - 32B / 4B - 8 
+
+
+  - Now when the CPU generates the Logical Address say 9 - 1001 (10 - Virtual Page , 01 - Offset )
+  - Now we take the Virtual Page Number and refer the Process Page Table 
+
+      - Now we have Virtual Page Number - 10 - 2 
+      - Now from Page Table of the Process we see that it is mapped to Physical Page - 2 which is mapped to say Frame Number 1
+      - So now we know that the Virtual Page 2 is mapped to Physical Frame 1
+  - Now we take the Offset - 01 - 1
+
+      - So this means in the Virtual Page 2 Offset 1, so now after translation it is Frame 1 Offset 1 which is say Physical Address 5
+        from the picture
+
+  - So this is how translation happens
+  - Now the CPU perfroms read and write operation in the Physical Address 5
+
+ 
+  - Now Remember CPU generates Logical Addresses of the VAS, it does not know that there is a Physical Memory and Physical Addresses
+  - It is the Paging and MMU which knows about the Physical Memory and Physical Addresses
+  - So CPU just knows about the VAS of the Process and generates addresses on this VAS
+
+  - So when a Process refer to say a Logical Address 9 then Process thinks that it is performing operation on this Logical Address 9 of VAS 
+    of the Process, it does not know that it is actually performing an operation on the Physical Address 5 in Physical Memory because this is
+    managed by the Paging and MMU
+
+  - Process knows that it has a VAS of size of 16B and refers to its addressess but it does not know that there is a Physical Memory and
+    Physical Addresses in which the actual operation is being performed
+
+  - Refer the picture Paging in Action and picture Paging in Action - 1 
+
+
+- Mutiple Process Scenario
+
+  - Physical Memory Frames are shared between processes executing in the system
+  - Free Frame can be allocated to a Process's Physical Page
+
+- Resolve External Fragmentation
+    - Here the Page Size = Frame Size so the Page is loaded completely in the Frame so there is no space present in the Frame becaues
+      it is occupied completely
+    - So there is no External Fragmentation ( becuase there would not be Frames which are having space in it and in total they will
+      load a Page )
+
+
+- Page Allocation to a Process
+
+    - Now VAS is fragmented in Virtual Pages
+    - OS allocates and frees Memory to and from a Process in units of PAGE_SIZE ( 4KB )
+
+    - Page Allocation is done by OS
+    - Memory Allocation is requested by the Process
+    - So now let's see how when a Process requestes Memory what happens
+
+    - So now when the Process executes malloc(12) 
+
+      - Does OS Allocate ( 12B + MetaDataBlockSize ) bytes 
+      - Will the OS Allocate PAGE_SIZE bytes of memory to a process 
+
+    - OS Allocates both
+      
+      - OS Allocates PAGE_SIZE bytes Virual Memory to your process ( and created corresponding Physical Page ) , in those PAGE_SIZE bytes,
+        ( 12B + MetaDataBlockSize ) bytes are assigned to your process
+      - The space left in Page ( PAGE_SIZE -(12 + MBS)) Memory is cached by the glibc malloc implementation
+
+    - So now when the Process executes malloc(20) , then malloc checks if the Page created has space which it has so OS Allocates the
+      Memory in the same Page ( 20B + MBS )
+
+    - So now the space in the Page is (PAGE_SIZE - 12 - 20 - 2 * MBS) Bytes in Virtual Page
+
+    - So when the Virtual Page has no space then the malloc requests OS to assign a new Virtual Page to the Process
+
+
+    - Now let's see this using a Process
+
+        - Now say we have Process and each Process has VAS 
+        - VAS contains the Text section, Data Section, Stack Memory , Heap memory and Command Line Arguments
+        - Now this VAS is fragmented into Virtual Pages
+        - Now Text Section can be in one Virtual Page and it can be a pert of more Virtual Pages becuase we fragment the VAS based on the
+          fixed PAGE_SIZE but the Text Section size can be different
+
+        - Now when Process start to execute we have the Virtual Pages for Text Section, Data Section and Command Line Arguments which are
+          necessary of Process execution
+
+        - But for Stack and Heap Memory the Virtual Pages are created by OS when the Process requires them
+        - Remember OS allocates a new Virtual Page when a Process requests for Memory
+
+        - Now let's say we have a Process which is using Heap Memory and now the size of Heap Memory is same of a Virtual Page means the
+          boundary of Virtual Page and Heap Memory are same
+
+        - So now the Process requests Memory malloc(100)
+
+        - So now the glibc is where malloc implementation is written, so there it checks that in the Virtual Page there is no space,
+          so glibc malloc will call sbrk system call and request the OS to create a new Virtual Page for the Process which will move the
+          sbrk pointer by a Page Size ( Remember the OS allocates a new Page to the Process not 100 bytes requested by the Process )
+
+        - So from the 4KB Virtual Page the OS creates the glibc malloc will allocate ( 100 + MBS ) bytes of Memory requested by the Process
+          for it to use, now the malloc knows how much space is there in this Virtual Page that it can use for next request
+
+        - OS does not that glibc is efficiently doing this, it knows that it has allocates 4KB of Memory to a requesting Process
+
+        - Now when the Process requests malloc(200), the glibc malloc checks the Virtual Page space and it has space so malloc allocates
+          ( 200 + MBS ) space to the Process from the cached Virtual Page
+
+        - So now malloc does not call sbrk system call
+
+        - Why the OS allocate the requested bytes of memory
+            - It can be done but for that malloc needs to call sbrk system call which involves mode switch
+
+        - So we call sbrk when we need a new Virtual Page by the OS, so glibc malloc caches Virtual Page Space to not call sbrk system call
+          when the Process requests Memory
+
+
+
+- Shared Memory Pages
+
+  - A shared Physical Page is a Physical page which is shared by two and more running processes
+  - A Physical page is said to be shared if it is present in Page Tables of two and more processes
+
+  - Now in a configuration of system which was used for Paging
+
+      - Virtual Page 2 of Process P1 is mapped to Physical Page Y which is mapped to Frame 1
+      - Virtual Page 3 of Process P2 is mapped to Physical Page Y which is mapped to Frame 1
+
+  - The Virtual Page Numbers are different as in the code of each Process the Shared Memory is referred in different places ( can be same,
+    it is the Virual Page number where the Shared Memory is being referred )
+
+  - Now when Virtual Pages of differrent Processes Map to a Physical Page, then those Processe are known to share that Physical Page
+    
+  - Now the Shared Memory Page is created and mapped to the processe using a system call mmap
+
+  - So when Virutal Pages of different Processes maps to same Physical Page, that Physical Page is shared by the different Processes
+  - This is called Shared Memory
+  - Shared Memory is one of the Inter Process Communication technique
+
+  - A system call is used by different Processes to create a shared memory region and communicate data through it
+
+  - Refer the picture Shared Memory Pages
+
+
+- Page Table Challenges
+
+  - Page Table Size Matters
+  - Contiguous Physical Memory Allocation ( to put a page in Physical Memory we need a Frame which is contiguous )
+  - Page Table for small Processes
+
+  - The solution to these is Multi Level Paging
+
+
+- Large Page Table Size
+
+    - Now say we have a 
+          - 32bit system
+          - Physical Memory is 4GB
+          - Page Size is 4KB
+          - Page Table Entry is 4B
+
+          - So now we have for each process 2^20 ( 2^32B / 4KB  ) Pages
+
+          - So the size of Page Table for each process is 2^22 Bytes ( 2^20 * 4B ), now this is 4MB
+          - So for each Process 4MB of Physical Memory space is being used to put the Page Table ( Remember Page Table of the Process needs
+            to be placed in the Physical Memory for the Process to execute )
+
+          - So say we have 100 Processes then 4MB * 100 which is 400MB space of Physical Memory is being used
+
+    - Now say we have a 
+          - 64bit system
+          - Physical Memory is 8GB
+          - Page Size is 4KB
+          - Page Table Entry is 4B
+
+          - So now we have each processs 2^52 ( 2^64B / 4KB ) Pages
+
+          - So the size of the Page Table for each process is 2^54 Bytes ( 2^52 * 4B ), now this is a large number and is for one process
+
+
+    - So Page Table size grows as the VAS size grows
+
+    - But we want 64bit systems because 32bit system cannot access more than 4GB of Physical Memory, but in 64bit system the size of the
+      Page Table for each Proces is a large number
+
+    - So the solution for this large Page Table Size is Multi Level Paging
+
+
+  - Need for Continuous Physical Memory 
+
+    - Page Tables like Physical Pages are not fragmented and need contigous memory in Physical Memory
+    - Say 4MB of Page Table needs 4MB of contiguous Memory
+
+    - So now when the VAS size grows then the Page Table grows, then to put the Page Table we need large contigous Memory in Physical Memory
+
+    - Now say we have three processes each need 3frames to put their Page Table ( Remember when the Page Table is in the Physical Memory then
+      the Process executes )
+
+    - So these three processes put thier Page Table each occupying 3 contiguous frames, but when the processes grow then such
+      contiguous frames are not there in the Physical Memory
+
+
+  - Page Table for small Processes
+
+    - Now say we have 
+          - 32bit system
+          - Physical Memory is 4GB
+          - Page Size is 4KB
+          - Page Table Entry is 4B
+
+          - So now we have for each process 2^20 ( 2^32B / 4KB  ) Pages
+
+          - So the size of Page Table for each process is 2^22 Bytes ( 2^20 * 4B ), now this is 4MB
+
+    - Now when a process is executing OS creates it's Page Table of size 4MB and load the Page Table in Memory
+
+    - Processes are different and each Process is not memory intensive
+
+    - Now say we have a process, so when the process is getting executed
+
+        - In the VAS we have the Code Section, Data Section, Command Line Arguments and the Stack Section for the main function in the
+          process
+
+        - Now we have pages that have these sections
+
+            - Say 4 Pages have Code Section and Data Section
+            - Say 2 Pages have Command Line Arguments and the Stack Section
+
+        - So Physical Pages are created for the above Virtual Pages and entries are there in the Page Table
+
+        - But for the other Page Table entries ( 2^32 - 4 -2 ) we do not have a mapping to Physical Pages
+        - But the Page Table is put in the Physical Memory so that the Process executes
+
+    - So for small Processes the Page Table does not have mappings to the entries and is put in the Physical Memory
+
+    - So the solution is Multi Level Paging
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

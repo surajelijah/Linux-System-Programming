@@ -1,0 +1,14 @@
+- Rules for Defining and Using the Structures and Functions
+
+    - Structures
+        - Always defines the structures and then use it 
+        - If there are any nested structures then define the nested structures then use them in other structures
+        - Define the independant structures then the dependant structures
+
+    - Functions
+        - Always declare the function and then use it
+        - Compiler do not consider the function definition while compiling the source files ( creating Objects )
+        - Functions definition must be present in one source file which should be linked to create an executable
+
+
+
