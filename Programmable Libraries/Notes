@@ -1,0 +1,157 @@
+
+- In Programmable Libraries 
+    - Teach the Library to perform application specific Tasks
+    - While Library preserves the application property that is being generic
+
+- We shall make our Library Programmable that is teach it while running how to perform application specific operations
+- YOu need to have idea about function pointers
+
+
+- Now we know that the dll data structure
+
+    typdef struct dll_node_{
+
+        void* data;
+        struct dll_node_ *left;
+        struct dll_node_ *right;
+    }dll_node_t;
+
+
+    - Now DLL is not aware of data it holds in its nodes as it is void*, it just holds the pointer to the structure that is the  data
+      proivided in the application
+
+    - So Library cannot manipulate the app data in any way
+    - By Programming the Library, we teach the library how to manipulate the app data
+
+( Rememeber that in the application.c we have a strudent stuctur and we stored the data in dll using the dll.c functions
+  But when we wanted to print data or compare we had to write the code in the application.c because the dll_node_ had the pointer but
+  does does not refer to the data because student structure is not provided to it
+) 
+
+
+- Now let's say we need to search for a student record based on his id so we pass the id as  parameter and will want to get the student details
+  ( For that we should write the code in the application.c or where the student structure is defined )
+
+- Now let' say we need to search for an employee record using id so we pass the id as parameter and will want to get the studetn details
+  ( For this we should write the code in the application.c or where the employee structure is defined )
+
+- Now if you see both the structures use the dll to store the data and the search function is similar
+
+        - But the library is able to store the data but not get the data or used to comapare and is not generic
+
+- So for this we make the libraries Generic 
+ 
+
+ - Now if you see the code in application.c
+
+    - We have two structure student and employee and we use dll for storing their data
+    - But we have one print function for student and one print function for employee and also one search function for student and one search
+      function for employee
+    - If your library is Generic then we can have one print function and one search function for both student and employee
+
+- So for this we make the dll library generic
+- How do we do that
+
+    - Now we obeserve that the logic for print and search functions for both student and employee structure are similar, it is the structure
+      type and thier fields which were not similar ( we had to write such code beacause the dll library deos not know the type of data but knows the pointer to the structure type)
+
+- So now let's see the solution
+
+    - So we writing the code for each type of structure that we define, we delegate the responsibility of searching a particular record by key
+      to Library itself
+    - This is how we will write our search logic in the library code
+
+    - Application need to teach the DLL Libary how to match the application record ( student and employee ) in a DLL node with the given key
+
+            Now let's say we have two search functions
+
+                        student* match_student_rec_by_key(student* data, int key)
+                        employee* match_employee_rec_by_key(employee* data,int key)
+
+            In order to teach the library about how to match we write functions to make it generic in application.c
+
+                        int match_student_rec_by_key(void* data, void* key)
+                        int match_employee_rec_by_key(void* data,void* key)
+
+            This implementation needs to be provided by the application.c 
+
+            static int /*return 0 if matches, return -1 if do not match*/ 
+                search_student_db_by_key(void *data, void *key){
+
+                    student_t *student = (student_t *)data;
+                    unsigned int rollno = (unsigned int)key;
+                    if(student->rollno == rollno)
+                        return 0;
+                    return -1;
+                }
+
+    - Now how do we use these functions in the dll library, for that we use the function pointers in the dll libary in the dll_list structure
+      to refer to these functions specified in the application.c ( Remember it is not yet generic)
+
+    - Now we define a function pointer in the DLL Library
+
+
+                typedef struct dll_{
+                            dll_node_t *head;
+                            int (*key_match)(void *, void *);  // This is the function pointer that is used to refer to the functions int 
+                                                               // the application.c
+                    } dll_t;
+    
+
+    - Now the function pointer will hold the addresses of the functions defined in the application.c 
+
+    - Now we add a function to DLL Library and provide its implementation in the dll.c
+
+            void  register_key_match_callback(dll_t *dll, int (*key_match)(void *, void *));
+
+                    where we give the dll head and provide the function name defined in the application.c 
+
+            - The implementation of the function is
+
+                void register_key_match_callback(dll_t *dll,int (*key_match)(void *, void *)){
+
+                             dll->key_match = key_match;
+                    
+                        }
+
+            - Now here we are assigning the function define in application.c to the function pointer defined in the dll_list
+            - Now the dll library knows which function in the application.c is assigned to the function pointer in dll
+
+
+    - Now we need to write a generic search function in Library
+    - This function can be used to search any application data hold by DLL
+
+            void * dll_search_by_key (dll_t *dll, void *key)
+
+            - The implementation of the function 
+
+                            void * dll_search_by_key (dll_t *dll, void *key){
+
+                                        if(!dll || !dll->head) return NULL;
+
+                                        dll_node_t *head = dll->head;
+
+                                        while(head){
+                                            if(dll->key_match(head->data, key) == 0)
+                                                return (void *)head->data;
+                                            head = head->right;
+                                        }
+                                        return NULL;
+                                    }
+
+            - If you observe the function defined in the application.c is being used by the generic function with the function pointer
+              in the dll_list
+
+
+- So now if you obesrve we have written a generic search function where the Library is traversing the list not the function in the application
+  but it is the application function which is in the function pointer is giving how to compare the data that is about the structure information
+
+
+- So with this we have made the search opearation to the Library but we need to write two functions for giving them the type of strucuture    
+  being searched in the application.c
+
+- So the developers need to write a key match funtion which is given to the function pointer for each data type in the application.c
+
+- We can implement a comparison generic function in a similar way
+
+

@@ -1,0 +1,144 @@
+- Timers
+
+    - Why we need Timers
+
+        - It is a Programming Concept that would come across is the Timers
+        - Timers are used in scheduling the events to happen at a particular time and periodically
+        - Timers ar used in the domain of Computer Science in Networking
+            - TCP Timers
+            - OTP Time outs
+            - Session  Log out
+            - Periodically sending out Network Packets
+            - Scheduling the computation
+
+- We will know about the Linux Posix COmpliant TImers API and build out own custom controllable timers on top of them
+
+
+- Timer Types
+    - One Shot Timers  - Schedule an event to happen once
+    - Periodic Timers  - Schedule an event to happen at periodic times
+    - Exponential Back Off Timers - Schedule an event to happen at exponential times
+
+
+- Posix API's for Timers
+
+    - Posix provides 4 basic API's to manipulate timers on Unix compliance platforms
+        
+        - timer_create()
+            - Create a Timer Data Structure 
+        - timer_settime()
+            - Used to start or stop the timers depending on the arguments
+        - timer_gettime()
+            - Returns the time for the timer to do what it was to do
+        -  timer_delete()
+            - Delete the timer data structure
+
+- Suppose we want to send a netwok packet after 10 seconds
+
+    - At 0, you start the timer
+    - At 10, timer does what it is to do 
+
+
+- Timer Design
+
+    - Timer works in the context of a different code flow ( thread or process )
+
+    - Now let's say we have a Process P 
+
+        event_to_be_performed_by_timer(arg){
+
+            // Code
+
+        }
+
+        int main(){
+
+            //Code
+
+            <new_timer_launch>( event_to_be_performed_by_timer , arg)  // Here event_to_be_performed_by_timer is the function pointer
+                                                                          and arg is its arguments
+
+            return 0;
+        }
+
+    - Because the Timer works in the context of different code flow we need to pass a function pointer to denote from where the thread
+      that got created should start
+
+    - Now let's say we have created a timer to perform event_to_be_performed_by_timer in 5 seconds
+
+        - So when in the Process P when we reach the line <new_timer_launch> Process P would fork another process with the given arguments,
+          another way Process P does is that it creates a Thread with the function pointer as the starting point and arg its arguments
+
+        - So say Process P creates a Thread when it reaches the line <new_timer_launch>,after creating the Thread Process P 
+          would go to the next line and executes it's code then the Operating System would count for 5 seconds
+          and then execute the code in the function given by the function pointer 
+        
+        - The argumetns and memory allocation in the event_to_be_performed_by_timer function should be released in that function
+
+        - event_to_be_performed_by_timer function is called timer callback
+
+        -  Refer the Timers - 2 picture
+
+
+- Timer Creation
+
+         - int timer_create ( < Type of Timer >, < TImer Controlling Varibles >, < Timer pointer >);
+
+            - Typer of Timer - REAL 
+            - Timer Contolling Varibles
+
+                    - It is structure sigevent in which we have memebers which needs to given the information
+                        - sigev_notify_function - < ptr to callback function >
+                        - sigev_value.sival_ptr - < address of argument to callback arg > 
+                        - sigev_notify = SIGEV_THREAD // asking the kernel to launch the timer thread to invoke callback
+            - Timer Pointer - Address of the variable of type time_t
+            - The pointer to the call back function has a convention 
+
+                    void timer_callback( union sigval arg ){
+
+
+                        event_to_be_performed_by_timer(arg.sival_ptr)
+
+                    }
+
+                    - Basically this is wrapper on the actual function that gets executed when the timer thread gets created
+
+        - Now we need a way to give the time after which the timer executes the function given
+            - For POSIX standrad we have a data structure
+
+                    struct itimerspec ts;
+
+                    struct itimerspec{
+
+                        struct timerspec it_interval; // next value - when the timer launches next
+                        struct timerspec it_value // current value  - when the timer has launched
+
+                    }
+
+                    struct timerspec{
+                        
+                        time_t tv_sec; // seconds
+                        long tv_nsec; // nanoseconds
+
+                    }
+
+            - Say if 
+                - tv_sec - 5
+                - tv_nsec - 0 
+                - It means the timer is 5 seconds
+
+        
+        - Then we need to start the timer
+
+                int timer_settime(< timer > ,0 , &ts, NULL); 
+
+                - < timer > - This is the timer pointer given to the timer_create() function and which is of type time_t
+
+
+-  Refer the code 
+   C:\Projects\Udemy\Linux_System_Programming\Working with Linux Posix Timers\WheelTimer\WheelTimer\libtimer\Course\timerExampleDemo1.c
+
+
+
+
+

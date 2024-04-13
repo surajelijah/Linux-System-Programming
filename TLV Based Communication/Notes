@@ -1,0 +1,368 @@
+- The Concept of TLV
+    - TLV - Type Length Value
+
+- Let us understand what TLV solves
+    - It is a very common scenario in Networking that Machines share messagess with each other. Many Internet Routing protocols
+    have Machines share messages with each other
+
+    - Say the Interior gateway protocol such as OSPF share thier Link State packets with the other routers
+      in the network for their proper functioning
+
+    - To understand say we have Machines with two interfaces each and are communicating with each other with some protocol P
+
+        - Machine A
+            Interface 1 - 10.1.1.1/24
+            Interface 2 - 12.1.1.1/24
+            LoopBack    - 100.100.1.1/32
+
+        - Machine B
+            Interface 1 - 11.1.1.1/24
+            Interface 2 - 12.1.1.2/24
+            LoopBack    - 100.100.1.2/32         
+
+        - Machine C
+            Interface 1 - 10.1.1.2/24
+            Interface 2 - 11.1.1.2/24
+            LoopBack    - 100.100.1.3/32
+
+     - Now we have a message of the follwoing structure
+
+            struct message{
+
+                uint loopback_ip;
+                char router_name[32];
+                uint if_addr1;
+                uint if_addr2;
+                uint link1_bw;
+                uint link2_bw;
+            };
+
+     - This structure is used by the Protocol P in the machines to share messages with each other
+
+     - Now say Machine A sends a message to B and C using this structure the data will be
+
+            struct message{
+
+                100.100.1.1/32  // Note that this is in unsigned integer so this IP representation should be in unsigned integer
+                A 
+                10.1.1.1/24
+                12.1.1.1/24
+                100
+                200
+            }
+     - So Machine B and Machine C will have thier message strucutre with data to be shared
+
+     - So when Machine A sends the message Machine B recieves the data and uses it like
+
+                - Message is received and strored in the buffer
+                - Because the structure being used in the Machines is Protocol P so we can type cast the buffer and read  the contents
+
+                     struct message* recv_msg = (struct message*)buffer;
+                     recv_msg->loopback_ip;
+                     recv_msg->router_name;
+                     recv_msg->if_addr1;
+                     rev_msg->if_addr2;
+                     recv_msg->link1_bw;
+                     recv_msg->link2_bw;
+
+    - So Machine B and Machine C will read the data sent by Machine A, so this is fine because the sending and recieving machines
+      understand each other
+
+
+    - Then why do we need a concept of TLV
+
+    - In such sharing of messages due to heteroginity of communicating machines the sending and receiving machines are heterogenous
+
+        - Machines are manufactured by different vendors
+        - Machines use different Hardware and Technologies
+        - Machines use different C compilers
+
+    - So this is where the TLV concept is used
+
+    - So let us understand what happens due to heteroginity when machine communicate in the network
+
+    - We will discuss two scenarios
+
+        - When machines are different
+        - When selective machines in the network are upgraded
+
+
+- Why we need TLV's
+
+- Now let's understand how C refer to the fields in the structure
+    - We know that is uses the offset
+    - Now say we have a 32bit Machine this means that sizeof(unsigned int) - 4B - 32 bits
+
+    - Now say we have the structure
+           
+             struct message{
+
+                uint loopback_ip;
+                char router_name[32];
+                uint if_addr1;
+                uint if_addr2;
+                uint link1_bw;
+                uint link2_bw;
+            };
+
+
+        - Now let's see how C understands the structure
+
+                  Fields          Size        Offset
+
+                loopback_ip         4           0
+                router_name         32          4
+                if_addr1            4           36
+                if_addr2            4           40
+                link1_bw            4           44
+                link2_bw            4           48
+
+            - Now the starting address of the structure is 2000 and we have
+
+                            message->if_addr1 
+                
+                - Then the C would go to the structure staring address and the offset of the if_addr1
+                - Address of if_addr1 -  starting address + offset of if_addr1 - 2000 + 36 = 2036
+
+                So we from the address 2036 we can read/write 4B of data to the if_addr1 becasue it is uint
+
+- Now let's see a scenario 
+
+    - Let's say we have a Machine A which is 32bit and we have a Machine B which is 64bit
+    - It means sizeof(unsigned int)
+        - Machine A - 4B
+        - Machine B - 8B 
+
+
+    - Now let's see the offsets of structure in Machine A
+
+                  Fields          Size        Offset
+
+                loopback_ip         4           0
+                router_name         32          4
+                if_addr1            4           36
+                if_addr2            4           40
+                link1_bw            4           44
+                link2_bw            4           48
+
+    - Now let's see the offsets of strucure in Machine B
+
+                  Fields          Size        Offset
+
+                loopback_ip         8           0
+                router_name         32          8
+                if_addr1            8           40
+                if_addr2            8           48
+                link1_bw            8           52
+                link2_bw            8           60
+
+
+    - Now say Machine A receives message from the Machine B 
+        - Machine A does typecast to understand the message sent by B , but Machine A will typecast according to it's own defintion
+          of the structure message and it's offsets using sizeof(unsigned int) - 4B
+
+                struct message* recv_msg = (struct message*)buffer;
+                recv_msg->loopback_ip;
+                /* Here according to Machine B to understand loopback_ip Machine A should read 8 bytes but it reads 4B because according to
+                   Machine A's defintion it is 4B
+                */
+                recv_msg->router_name;
+                /*
+                   Now according to Machine B the offset to read router_name is 8 byte from staring address but for Machine A 
+                   it is 4 byte from the starting address 
+                */
+                recv_msg->if_addr1;
+                rev_msg->if_addr2;
+                recv_msg->link1_bw;
+                recv_msg->link2_bw;
+
+
+
+        - Because of this heteroginity in the Machines Machine A will understand the stcuture sent by Machine B in different way
+        - It happened beacuase size of Data Type on Machine B is different from that of Machine A 
+
+
+- Now let's see another scenario which is due to the upgrade of selective Machines
+
+    - Upgrade means adding new memebers in data structure and enhancing the functionality
+
+    - Mahcine A and Machine B are 32bit means sizeof(unsigned int) - 4B
+    - Now let's say we have upgraded Machine A by adding two new members in the struct message, so now the structure message is
+
+             struct message{
+
+                uint loopback_ip;
+                char router_name[32];
+                uint if_addr1;
+                uint if_addr2;
+                char if_mac1[6]; // New Member
+                char if_mac2[6]; // New Member 
+                uint link1_bw;
+                uint link2_bw;
+            };
+
+    - So now the offsets of the Machine A 
+
+                  Fields          Size        Offset
+
+                loopback_ip         4           0
+                router_name         32          4
+                if_addr1            4           36
+                if_addr2            4           40
+                if_mac1             6           44
+                if_mac2             6           50
+                link1_bw            4           56
+                link2_bw            4           60
+
+    - So now the offsets of the Machine B and Machine C 
+
+                  Fields          Size        Offset
+
+                loopback_ip         4           0
+                router_name         32          4
+                if_addr1            4           36
+                if_addr2            4           40
+                link1_bw            4           44
+                link2_bw            4           48
+
+
+    - Now when Machine B and Machine c receives a message from Machine A and when they want to understand it they will typecast the message
+      according to their own defintion of struct message
+
+    - So they will read them differently and also know that there are new members added in the message sent by Machine 
+    - This is because of the upgrade in Machine A
+
+
+- Networking is a field where network equipments being manufactured by various vendor,need to work in cooperation with each other for the
+  network protocol to work
+
+- Machine need to comply with each other for the network functionality to work and yet Network Vendors should innovate thier software and
+  be compliant with the existing software and with the other Machines deployed in the Network
+
+- Now let's see what is TLV
+
+    - TLV - Tyep Lenght Value
+        - Is a mechanism to encode the data in the format that is independant of 
+            - Machine Architecture
+            - Operating System
+            - Compiler
+            - Programming Language
+        
+        - TLV has 3 components
+            - TLV Type - TLV Identifier - 1B
+            - Data Length - Length of the actual data in bytes - 1B
+            - Actual Data 
+
+
+- Now lets say we have Machine A which wants to send Machine B, the set of IP addresses which are configured on its interfaces on Machine A
+
+        - So using TLV how will Machine A send this information to Machine B
+
+            - Now we need to take any number to be TLV Type. Lets take 132
+            - Now we need to define what this TLV type 132 means, so we define TLV 132 to be
+                - 4 byte integer number ( which is the ip address )
+                - 1 byte mask value
+            - This is the TLV 132 definition
+
+        - Now Machines which need to process TLV 132 should know what it's definition is to understand what Machine A sends to them
+
+        - So now Machine A is sending information about 4 IP Addresses with mask value so the TLV structure 
+
+                - TLV Type - 132
+                - 20 (Bytes)    ( 4  * 5Bytes ( 4bytes for IP + 1byte for mask ) )
+                - Actual Data
+                        
+                        - 201392385 (IP Address in unsigned int)
+                        - 24 (mask value)
+                        - 234946817
+                        - 24 
+                        - 218169601
+                        - 24
+                        - 184615169
+                        - 24 
+
+        - So when Machine B recievs this TLV Strucuture 
+
+            - It reads the 1byte which is the TLV type and knows that it is TLV 132, so it knows the definition
+            - So now Machine B knows that the Actual Data has 
+                - 4byte integer
+                - 1byte mask value
+                - So a unit of data - 4 + 1 - 5 bytes
+            - Then it reads the next byte which is the data lenght - 20 Bytes
+            - So now Machine B knows the data units - 20/5 = 4
+
+            - So now it reads the data accordingly knowing next 5 bytes ( 4 bytes is IP and 1byte is mask value ) 
+
+
+        - This is how TLV is used
+
+- Now let's see how TLV is used in Heterogenous Machines
+
+        - Refer the picture TLV - 2 in this directory for the code
+
+        - In the above code memcpy(ipaddress, tlv_ptr, 4) is machine independant as memcpy copies byte by byte in ipaddress
+
+        - To read the ipaddress the use of this is machine dependant because sizeof(unsigned int) is differrent in heterogenous machines  
+                    unsigned int ip_address = *(unsigned int*)tlv_ptr 
+        
+        - So we use memcpy
+        - When the machine recognizes TLV then it pocesses the TLV Actual Data
+
+- TLV are about Send and Read data byte by byte and Machines in the network must know TLV Type Definintion 
+
+
+- Now let's see how TLV is used in Software Upgrade
+
+        - Now we have Machines A, Machine B and Machine C and they know the definition of TLV 132
+        - Now Machine A and Machine C are upgraded and there is a TLV 222 which has a definition that sends the information about
+          MAC Addresses of each 6 bytes ( Refer TLV - 4 picture )
+
+        - Now when Machine B receives data from Machine A it recognises TLV 132 and processes it but when it receives TLV 222 it will move
+          pointer to the next TLV
+        - So this is how even if the Machines are upgraded in the network they will work with other Machines
+
+
+- Data Stucuture - Streams ( Serialize Buffer )
+
+    - This is a Data Structure to create ( serialize ) and read ( de-serialize ) the TLV
+    - A stream is like a type writer where we start with the new line when the characters are filled in the current line
+    - The data is filled in the Buffer till there is space in the buffer
+
+
+    - Streams Data Structure
+
+        typedef struct serialize_buffer{
+
+            char* b;    // Data 
+            int size;   // The size of the buffer
+            int next;   // The next points to the place where data is present ( Refer the Stream - 1 picture ) 
+        }ser_buff_t;
+
+
+    - Now let's see some API on this Streams 
+
+        void init_serialized_buffer(ser_buff_t **b)
+        void serialize_data(ser_buff_t **buff,char* data,int nbytes)
+
+    - Now how to serialze TLV refer Stream - 4 picture
+    - Now this serialized buffer is sent to other Machines using the sockets with the buffer pointer  and the size of the data 
+
+
+    - Now let's see how we de-serialize the data
+
+        void de_serialize_data(char* buffer,ser_buff_t*,int size);
+
+    - The Implementation is in the TLV Implementation directory in this directory
+
+- This is the TLV concept
+
+
+
+
+
+
+
+
+ 
+
+

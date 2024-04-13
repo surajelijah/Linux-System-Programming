@@ -1,0 +1,50 @@
+In this we like to observe the text substitution
+in the source file using two header files
+
+- Cretead two header files A.h and B.h
+- B.h include A.h
+- B.h is included in the source file file.code
+
+Command - gcc -E file.c -o file.i (note -o option is not object file it means send the output to mentioned file)
+Output - inspect the preprocessed file file.i
+
+
+-The preprocessor also inserts lines recording the source file and line numbers in the form # line-number "source-file", to aid in debugging and allow the compiler to issue error messages referring to this information. 
+ These lines do not affect the program itself.
+
+
+Source file name and line number information is conveyed by lines of the form
+
+# linenum filename flags
+
+These are called linemarkers. They are inserted as needed into the output (but never within a string or character constant). They mean that the following line originated in file filename at line linenum. filename will never contain any non-printing characters; they are replaced with octal escape sequences.
+
+After the file name comes zero or more flags, which are ‘1’, ‘2’, ‘3’, or ‘4’. If there are multiple flags, spaces separate them. Here is what the flags mean:
+
+‘1’
+This indicates the start of a new file.
+
+‘2’
+This indicates returning to a file (after having included another file).
+
+‘3’
+This indicates that the following text comes from a system header file, so certain warnings should be suppressed.
+
+‘4’
+This indicates that the following text should be treated as being wrapped in an implicit extern "C" block.
+
+
+Let's experiment various case
+
+- Include just B.h in file.c
+    - In the first pass of Text Substitution the contents of B.h are replaced in file.c
+    - In the second pass the #define are subsituted and also we see that the #include A.h would be still present from the first pass
+    - So it is also expanded
+    - Remember that until no preprocessing directives are present in the source files text subsituion happens in as many passes as required recursively  
+    - Output check in the file.i
+
+
+- Include B.h and A.h in file.c
+    - Created another file1.c which includes both B.h and A.h explicitly wven though B.h already has A.h
+    - Check the output in file1.i
+    - We see that the A.h file has been expanded twice once during the recursive substituion of B.h and other while directly expanding itself in the source file file.c 

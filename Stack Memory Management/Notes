@@ -1,0 +1,435 @@
+- Stack Memory is at the Higher side of the Virtual Address Space of the Process
+- Now let's see
+    - What is Stack Memory
+    - What is the purpose
+    - How it is organized in the Operating Systems
+
+- Region of Memory in process Virtual Address Space where the data is added in Stack Manner is the Stack Memory of the Process in
+  it's Virtual Address Space
+
+- When a new function is invoked, Data is added to stack memory and when a current function call returns, data is freed from the stack 
+  memory, this Data is called a stack frame, so every function has a it's stack frame
+
+- Data which is strored in the Stack Memory is said to reside on a stack
+
+- Process has it's own fixed but configurable stack memory, when process executes stack memory is used back by the Operatin System
+
+- For the Function to execute, it's stack frame should be setup first on the stack memory. This is achieved by the 
+    - Caller - The function which is calling a function
+    - Callee - The function which is being called
+
+    - Say Function A is calling Function B then
+        - Function A - Caller
+        - Function B - Callee
+
+
+- Stack Memory Contents
+
+  - Now the contents of the Stack Frame are decided by the Caller and Callee Conventions
+  - Say we have the code
+
+        void function_a(int a,int b){
+
+          int p=12;
+
+          // Code
+          return;
+        }
+
+        void function_b(int c){
+
+            //Code
+
+            function_a(7,5);
+
+            //Code
+        }
+  - Now let's see how the Stack Frame for function_a is setup 
+
+      - Parameters are passed from right to left, so b then a
+      - Return Address of the caller ( next line where the function_a is invoked in function_b )
+      - Base Pointer of the caller ( because we update the base pointer for the new function_a when we use it, so we save it in the stack
+        so when we return from the function_a we will be having the base pointer of the function_b)
+      - Local Varibles of the function 
+
+ - Now 
+      - ebp - Base Pointer of the Stack Frame ( from here we read the local variables and the parameters )
+      - esp - Stack Pointer of the Stack Frame ( points to the top of the Stack) 
+
+- Now Stack Memory for a Process is fixed but configurable, so if we the Process uses more than the fixed Stack Memory
+  then the Opertaing System will give an error
+
+
+- Stack Overflow and Prevention
+  - This occurs when we use the Stack Memory more than the fixed Stack Memory given to the Process
+  - Stack Overflow is a situation where the program stack grows beyond the maximum Stack fixed size
+
+  - This occurs when
+      - We write recursive function calls
+      - When we create large local varibales like arrays because we know that local variables are stored in the Stack Frame, so creating
+        large arrays will increase the size of the Stack Frame
+
+- To know the Stack Memory Size of the Process in your system then use the command
+      
+        - ulimit -s
+
+
+
+- Stack Memory Corruption
+
+  - Stack Corruption is a situation where we corrupt the stack frame data by copying data on the stack frame
+    data
+  
+  - Now say we have a program 
+
+      void function_a(char* str){
+
+        char c[12];  // we created a local variable in the stack frame
+        strcpy(c,str); 
+
+        return;
+      }
+
+      int main(int argc, char** argv){
+        
+        function_a(argv[1]);
+
+        return 0;
+      }
+
+      - Now when the function_a is called by main let's see how the stack frame of function_a is
+        (Remember that the stack frame of main is on top of the stack frame of function_a)
+
+          - str - Parameter
+          - Return Instruction Address ( 4B )
+          - Base pointer of Main function ( 4B )
+          - c[12] - character array which is 12 bytes (say it is 32bit machine then it takes 3 bytes which
+                    are stored in the stack frame like)
+
+              -  c[8] c[9] c[10] c[11]
+              -  c[4] c[5] c[6] c[7]
+              -  c[0] c[1] c[2] c[3]
+
+      - Now when the argv[1] - has length more than 12 then when the strcpy called in the function_a will
+        write the 12 bytes and then the ( say we have atgv length 20 bytes) 8 bytes of the data are copied
+        in the Base Pointer Address and the Return Instructuion Address, this is how we corrupted the data in
+        the stack frame of the function_a
+      - So now when function_a returns it has corrupted Base Pointer and Return Address
+      - Refer the Slide No - 179 in ALPC-PPT 
+
+
+- Procedure Call and Return
+
+  - Let us understand how Function Call is implemented in Linux OS using the Stack Memory
+
+  -Things to make sure
+    - When the caller makes a call to callee, callee should start execution from the beginning
+    - When callee returns,caller resumes from the next point where it called the callee
+    - Retrun value by Callee, should be available to Caller 
+
+
+- Call Stack is a collection of stack frames each function when called in program create a
+  new frame in stack
+
+- A frame that is being executed is always the topmost frame of stack, pointer to top
+  most frame in the stack is called frame pointer, basically called base pointer
+
+- Pointer to the top of the stack is called the Stack pointer, it points to the top of
+  the top most frame in the stack which is the top of the frame pointed by the base
+  pointer
+
+- Now let's see how function call happens, how values are returned from Callee and
+  how caller resumes it's execution when callee returns
+
+- Program Counter is a pointer to the current instruction to be executed called Instruction Pointer
+
+- Stack has two operation Push and Pop, both change the Stack Pointer accordingly
+
+
+
+- Procedure Call - Caller calling the callee ,control transfer to callee
+- Procedure Return - Callee returns and control retunr to Caller
+
+- Procedure Call and Procedure Return is called Calling Conventions which are different in
+  different Operating Systems, Compilers and Hardware 
+
+- CPU Registers ( The names of these registers are different in different Hardware but the purpose
+                  similar ) 
+
+  - eip - Instruction Pointer Register - stores the address of the next instruction to be executed
+  - esp - Stack Pointer Register - stores the adderss of the top of the top most stack frame
+  - ebp - Base pointer Register - stores the starting address in the callee's stack frame where
+                                  the caller's base pointer value is copied
+
+  - Remember that these are CPU Registers so they are Hardware Registers
+
+
+- Procedure Call Mechanism
+
+    - Now say we have three functions function_a, function_b and function_c
+
+    - Say function_a calls function_b and function_b calls function_c
+
+      f1(arg1,arg2){
+
+        //Code
+        f2(arg3,arg4);s // 0x1002 Instruction Address of this call f2
+      }
+
+      f2(arg1,arg2){
+
+        //Code
+        f3(arg3,arg4);s // 0x2004 Instruction Address of this call f2
+      }
+
+      f3(arg1,arg2){
+
+        //Code
+        
+      }
+
+    - Now say main has called the function_a and say the higher address of the stack are from 100
+      and the hardware is 32bits means the address is 4B
+
+        - The stack frame for function_a
+
+            100 - arg2
+            96 - arg1
+            92 - Return Address of main 
+            88 - ebp of main
+            84 - local variable1
+            80 - local variable2
+            76 - Address where the stack pointer is pointing to 
+            
+            - Now when retunr address and the ebp of main are stored on the
+              then the ebp is changed with the current ebp which is address
+              next to the stack memory where ebp of main is stored 
+            - So now 
+
+                  eip - start address of the f1 code
+                  ebp - 84
+                  esp - 76
+            - Now the function_a executes and creates local variables when needed
+
+
+          - The stack frame for function_b when function_a calls it
+
+            76 - arg4
+            72 - arg3
+            68 - Return Address of function_a ( 0x1002 ) 
+            64 - ebp of function_a ( 84 )
+            60 - local variable1
+            56 - local variable2
+            52 - Address where the stack pointer is pointing to 
+            
+            - So now 
+
+                  eip - start address of the f1 code - this is present in the call instruction 
+                  ebp - 60
+                  esp - 52
+          
+          - The stack frame for function_b when function_a calls it
+
+            52 - arg2
+            48 - arg1
+            44 - Return Address of function_b ( 0x2004 ) 
+            40 - ebp of function_b ( 60 )
+            36 - local variable1
+            32 - local variable2
+            28 - Address where the stack pointer is pointing to 
+            
+            - So now 
+
+                  eip - start address of the f1 code - this is present in the call instruction 
+                  ebp - 36
+                  esp - 28
+
+- eip stores the address of the instruction in execution, eips increments and the next instructions
+  are executed
+
+- The Return Address of the Caller and the ebp of the Caller are stored which helps in the caller
+  to resume it's execution when the callee returns
+
+- When the Caller invokes the Callee
+  - The current values of ebp and eip are stored in the Callee's Stack Frame
+  - Then the ebp and eip registers are updated with the Caller's Stack Frame
+
+- Refer to Slide - 180 in ALPC-PPT
+
+
+- Purpose of Base Pointer Register
+
+  - For a frame in execution the ebp register value is used to refer to access the local variables
+    and local arguments of the frame 
+  
+  - Now say we have a stack frame
+            76 - arg4
+            72 - arg3
+            68 - Return Address of function_a ( 0x1002 ) 
+            64 - ebp of function_a ( 84 )
+            60 - local variable1
+            56 - local variable2
+            52 - Address where the stack pointer is pointing to 
+            
+
+            - So now 
+
+                  eip - start address of the f1 code - this is present in the call instruction 
+                  ebp - 60
+                  esp - 52
+
+  - Now now to access the local variable and local arguments by using the ebp
+
+        ebp + 0 - address where the caller's base pointer is saved
+        ebp + 4 - address where the caller's next instruction address is saved
+        ebp + 8 - arg3
+        ebp + 12 - arg4
+        ebp - 4 - var2
+        ebp - 8 - var1
+
+
+        - ebp is 60 
+          - Value at ebp is 84
+
+  - So CPU Accesses all of the data of the current stack frame in execution
+    using the ebp register value
+  - For a frame to execute it's instructions, ebp value must be set
+  - ebp is the address where the caller's base pointer address is saved in the Callee's Stack Frame
+  - When Callee returns, Caller's should restore the value of ebp register to point to where the
+    Caller's Caller's base pointer address is stored in Caller's Stack Frame
+
+- Formalizing Procedure Call Algorithm
+
+  - When Caller Calls the Callee, things that takes place on most Linux System Architecture
+
+    - Caller - Push the Argument list from right to left
+               push arg2
+               push arg1
+    - Caller - Push the address of the next instruction in the caller as Return Address in the callee's stack frame
+               push %eip
+    
+    - Callee - Push the current frame's (Caller) base pointer and copy esp to ebp
+               push %ebp - Pushing the Caller's ebp to the stack
+               mov %ebp, %esp - Setting the new ebp for the calle's stack frame by copying the esp to ebp as esp
+                                now points to the ebp of the Caller
+    - Callee - Set PC - next instruction in Callee to be executed
+                mov %eip, < address of first instruction in callee >
+
+    - Callee - Push the Local Variables of Callee
+                push variable1
+                push variable2
+
+    - Callee - Execute the Callee
+
+
+
+- Procedure Returns
+
+  - Now let's see how the caller's execution is resumed when the callee returns
+
+  - Now say we have 
+
+      - The stack frame for function_b when function_a calls it
+
+                76 - arg4
+                72 - arg3
+                68 - Return Address of function_a ( 0x1002 ) 
+                64 - ebp of function_a ( 84 )
+                60 - local variable1
+                56 - local variable2
+                52 - Address where the stack pointer is pointing to 
+                
+                - So now 
+
+                      eip - start address of the f1 code - this is present in the call instruction 
+                      ebp - 60
+                      esp - 52
+              
+              - The stack frame for function_b when function_a calls it
+
+                52 - arg2
+                48 - arg1
+                44 - Return Address of function_b ( 0x2004 ) 
+                40 - ebp of function_b ( 60 )
+                36 - local variable1
+                32 - local variable2
+                28 - Address where the stack pointer is pointing to 
+                
+                - So now 
+
+                      eip - start address of the f1 code - this is present in the call instruction 
+                      ebp - 36
+                      esp - 28
+
+    - Now when function_c returns then for function_b to resume it's execution
+
+      - ebp - 36 , eip - return instruction in function_c , esp - 28
+      - Now when function_c returns , the stack frame for function_c should be freed
+      - Value of esp should be set to 52, ebp - 60 and eip - 0x2004 so that the function_b will
+        resume and execute it's instructions
+
+
+- Procedure Return
+
+  - Now when the function_c returns 
+        - The stack frame for function_b when function_a calls it
+
+                        52 - arg2
+                        48 - arg1
+                        44 - Return Address of function_b ( 0x2004 ) 
+                        40 - ebp of function_b ( 60 )
+                        36 - local variable1
+                        32 - local variable2
+                        28 - Address where the stack pointer is pointing to 
+                        
+                        - So now 
+
+                              eip - start address of the f1 code - this is present in the call instruction 
+                              ebp - 36
+                              esp - 28
+
+  - esp is incremented which frees the local varibles which is done esp=ebp
+  - Then
+    - mov %ebp,%esp - Restoring the function_b ebp
+    - esp incremented
+  - Then
+    - mov %eip,%esp - Restoring the function_b next instruction
+    - esp incremented
+  - Then esp is incremented to free the arguments
+
+  - So now 
+      - esp - 52
+      - ebp - 60
+      - eip - 0x2004
+  - So this is how the when the function returns the stack frame of the function is freed and
+    the control is given to the caller to execute
+
+
+
+- Formalizing Procedure Return Algorithm
+
+  - Callee - Set the return value of the Callee in eax register
+
+  - Callee - Increase the stack pointer by the amount - size of the local variables of the frame
+             ( This frees the local stack memory assigned to local varibles  )
+
+  - Callee - Restore %ebp to point to caller's stack frame and do esp increment
+             mov %ebp, %esp
+             esp incremented
+  
+  - Callee - Set %eip, Return Address is saved in the Callee Stack and then esp incremented
+             ( This gives the control to caller)
+             mov %eip, %esp
+             esp incremented
+  - Caller - esp is incremented and frees the arguments that it has pushed on to the stack
+
+  - Caller - reads the value stored in eax register and resumes execution from %eip + 1 ( Next Instruction )
+
+- This Stack Memory and the Caller and Callee Procedure Call Algorithms
+
+
+
+
+
+
+      
