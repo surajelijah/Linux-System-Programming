@@ -1,0 +1,84 @@
+
+- Stages of Compilation
+    - Preprocessing - Takes .c file and expands the preporcessor directives in it and gives a file .i ( Transaltion Unit )
+    - Compilation - Takes in Transaltion Unit (.i file) and gives a file .s ( Assembly Language code file )
+    - Assembler - Takes the .s file and gives Object files ( .o files)
+    
+        - Now we have two options 
+        - If we have many .o files then 
+            -   We can create a library ( which is a budle of object files )  or 
+            -   We can take the Object files and go to the  Linking step to create an executable
+                ( Rememeber that to create an exccutable one among the objects files must have a main function, if not an executable is not
+                  created, this is because the processor needs a main function to start the execution process )
+  
+    - Linking - Here we generate an executable using Object files and using dependant Libraries 
+
+
+- Now let's see each stage , we have a file.c and file.h
+
+    - Preprocessing - gcc -E file.c -o file.i
+    - Compilation - gcc -S file.i -o file.s
+    - Assembler - gcc -c file.s -o file.o  
+                  ( here gcc calls as which is the Assembler program in gcc )
+                  ( To view object file in text  then use the command objdump -D file.o > obj_textfile )
+
+
+- Now rememeber - gcc -c file.c gives an object file .o ( means it does the Preprocessing, Compilation and Assembler stages)
+
+
+- Now in the object file .o we see line like 
+
+    29:	e8 d2 ff ff ff       	call   0 <_square>
+
+    Now here 
+            29 - The Virtual Address of the Instruction in the Virtual Address Space
+            e8 d2 ff ff ff - Instruction's Hexadecimal Representation
+            call   0 <_square> - Instruction in text format
+
+
+
+- Now object files are not yet executable
+
+        - Each Object File have Virtual Addresses which start from address 0
+        - But an executable is ( merging of object files ) and has Relocatable Address ( which are Virtual Addresses ) but has a mapping to
+          the Physical Addresses so that the Loader understands how to load the program and execute the program 
+
+- So create an executable we go for the Linking process
+
+    - To create an executable we need a main function in one among the Object Files while Linking, this is because the Loader loads and
+      starts the execution from the main function
+
+    - Rememeber that we need not have many Object files while Linking, Linking is a process where we link the object files and dependant
+      libraries 
+
+    - Linker basically check if the addresses are linked properly
+    - Lineking is about giing access to external functions and global variables
+
+    ( So even if we have an object file that do not depend on external library functions and global varibles which is a unlinked file also has to go
+      in the Linking stage so Linker checks for any dependancies and if they are, they are linked)
+
+
+- Linker gives an executable
+
+            - gcc file.o -o file.exe
+              ( This calls ln which is actaully the linker program in gcc )
+
+            - To view the executable file in text format 
+
+                    objdump -D file.ext > exe_textfile
+
+
+- Now in the executable file .exe we see the line like this
+
+    401489:	e8 d2 ff ff ff       	call   401460 <_square>
+
+    Now here    
+            401489 - Relocatable Address of the Instruction in Virtual Address Space
+            e8 d2 ff ff ff- Instruction's Hexadecimal Representation
+            call   401460 <_square> - Instruction with the Relocatable Address to the function
+
+
+- So these stages together is called as Compilation 
+
+
+

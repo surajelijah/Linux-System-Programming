@@ -1,0 +1,84 @@
+
+- Memory Management in Linux
+
+    - Stack Memory 
+        - Procedure Calls
+        - Procedure Return
+
+    - Heap Memory
+        - malloc
+        - free
+
+
+- Virtual Memory Basics
+
+    - Virutal Memory is the total amount of memory our system has for a process ( one process )
+    - It is different from Physical Memory and is computer architecture dependant
+
+    - So for a 32 bit system, Total Virtual Memory is 2^32 bytes - 4GB which is per process ( for one process )
+        - This means that for one process we have 4GB of Virtual Memory that it can use
+
+    - In Virtual Memory every byte has an Address, so a 32 bit machine has 2^32 Virtual Addresses
+    - Processes work on Virtual Memory and they access, read and write to Virtual Addresses
+    - Processes 
+    - When we malloc then we get a Virutal adddress to work on it
+        - Now we know that a process can 4GB of Virtual Memory it means malloc can allocate memory of 4GB 
+
+    -Refer to Virutal Memory and Virtual Address Space picture in this directory
+
+
+- Memory Layout of Linux Process
+
+    - It is a diagrammatic representation of the Process Memory Layout ( Memory is Virtual Memory ) in Linux/Unix Operating System
+    - It helpls us to understand how a process Virtual Memory works during the execution of the Process
+
+    - Refer the Memory Layout of the Processs - 1 picture in this directory
+
+    - This is the Memory Layout of the Virtual Address Space for each process 
+
+    - Refer the Memory Layout of the Process with a Program in this directory
+        - Uninitialized global varibales and static variables are stored on bss section but these variables are initialised by the system
+
+    - Refer the Memory Layout of the Process - 2 in this directory
+
+
+- Size command 
+
+    - size < object file and executable file > 
+        - This provides the size of each section in the file in bytes 
+        - dec - It is the sum of the bytes of the sections in decimal format
+        - hex - It is the sum of the bytes of the sections in hexadecimal format
+   
+    - gcc -c -o memory_layout memory_layout.c ( -c means compile and assemble, we get an object file here)
+    - size memory_layout
+                text    data     bss     dec     hex filename
+                112       0       0     112      70 memory_layout
+
+    - gcc -o memory_layout memory_layout.c  ( measn here compile, assemble and link, we get an executable here)
+    - size memory_layout.exe
+                text    data     bss     dec     hex filename
+                14344    1532     112   15988    3e74 memory_layout.exe
+
+    - In the executable we linked the stdio.h file so there is code that is included in our memory_layout.c by stdio.h, so each section
+      size is more
+
+    - Include global variables and static variables and write functions and see the size of the sections
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+

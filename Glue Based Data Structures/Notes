@@ -1,0 +1,241 @@
+- Glue concept 
+
+    - It is a way in which we organize general purpose data structures like Linked Lists and Trees
+    - We shall define our DLL Library in a new way
+    - You will realize the benefits of using Glued Libraries over Traditional Libraries
+    - Linux Kernel code uses Glue version of standard data structures such as Trees and Linked Lists
+
+
+- Let us call our Glue Doubly Linked list as glthreads (gl -glue and threads is generally used for linked list data structures)
+- The Glue concept that is applied on the Doubly Linked List will be applicable to any  Data structures
+
+
+
+- GLthreads - Glue Doubly Linked List 
+    - The purpose of the Doubly Linked list does not change , it is the design of the Doubly linked List
+
+    - Now let's see how we have defined our DLL Structure which is the Traditional Way 
+
+            typedef struct dll_node_{
+
+                void* data;
+                struct dll_node_ *next;
+                struct dll_node_ *prev;
+            }dll_node_t;
+
+            typdef strut dll_{
+
+                dll_node_t *head;
+                int (*key_match)(void*,void*);
+                int (*comparision_fn)(void*,void*);
+            }dll_t;
+
+    - Now let's see how we define it in the Glue Based Way of defining the Doubly Linked List;
+
+            typedef struct glthread_node_{
+
+                                                // No void* data in the Glue based Way to store the data
+                struct glthread_node_ *next;
+                struct glthread_node_ *prev;
+            
+            }glthread_node_t;
+
+            typdef strut dll_{
+
+                glthread_node_t *head;
+                int (*key_match)(void*,void*);
+                int (*comparision_fn)(void*,void*);
+
+                unsigned int offset;            // We added an offset, let's see what is this for
+
+            }glthread_t;
+
+    - We do not have void* data member in the glthread_node, then how is the data stored in the node and we have added offset let's see what
+      it is for
+
+- Let's understand how Glthreads and Traditional DLL works
+
+        - Refer the Picture in this directory 
+
+        - The Tradtional DLL has void* which has the address to the data structure
+        - In Glue DLL the Data is Glue to the DLL
+
+
+        - Here app_data is the application data
+
+                struct app_data{
+
+
+                    <node of GLthread>  // This is the glue using which the app_data is attached to the DLL
+                }
+        
+        - So our application data contains a member of the Glue Node which is the glue that attaches to the DLL
+        - So using this glue node in the app_data the application data is attached to the DLL
+
+- Now let's see waht is the unsigned int offset
+
+            - Now say we have the structure 
+
+                    typedef struct emp_{
+
+                        char name[30];
+                        unsigned int salary;
+                        char designation[30];
+                        unsigned int emp_id;
+
+                    }emp_t;
+
+            - So when we create the structure the Structre in Memory occupies 
+
+                        Fields         Size              Offset
+                                       
+                    - name        - 30 * 1 bytes    - 0
+                    - salary      - 4 bytes         - 30 bytes ( 0 + 30)        // This means that the salary field starts and is stored after 30 bytes ( name ) from the start of the structure
+                    - designation - 30 * 1 bytes    - 34 bytes ( 0 + 30 + 4 )
+                    - emp_id      - 4 bytes         - 64 bytes ( 0+ 30 + 30 ) 
+
+            - Now offset is basically the starting address of the field from the starting address of the structure
+
+
+                - Say the starting address of the structure is 1000 then the address of each field is
+
+                            address of field = starting address + offset
+
+                        - name        = 1000 + 0 = 1000
+                        - salary      = 1000 + 30 = 1030
+                        - desgination = 1000 + 30 + 4 = 1034
+                        - emp_id      = 1000 + 30 + 4 + 30 = 1064
+
+
+            - Now let's write a Macro to get the offset of the field of the stucture
+
+
+                #define offset(struct_name,field_name)  \
+                    (unsigned int)&((struct_name *)0)->field_name 
+
+
+                    - Understand the Macro
+
+                            - Now basically when we create a Structure
+
+                                    struct dll* list= malloc(sizeof(struct dll));
+                       // In the above we create a structure of dll but malloc returns a void* pointer so we
+                       // do not get the data as the list pointer does not know the size of structure and of the fields and the offsets
+
+                                    struct dll* list= (struct dll*)malloc(sizeof(struct dll));
+                                    // Now the list pointer knows that the structure size and of the fields and the offset
+
+                                    list->data
+                                    // The above means    *(address of structure + offset of data )
+                                    // Here the list pointer has the some address 
+
+                    - Now in the above we have
+
+                                    ((struct name*)0) - means we make the pointer refer to the 0 address
+                                                        so to think that the structure starts from that address
+                                    
+                                    ((struct name*)0)->field_name - Now we have *( 0 + offset of field_name )
+
+                                    &((struct name*)0)->field_name - Now we have &(*(0+ offset of field_name)) - ( 0+ offset of the field )
+
+                                    (unsigned int)&((struct name*)0)->field_name - Now we have (unsigned int)( 0 + offset of the field )
+                                                                                   this is (unsigned int)(offset)
+
+
+- Now say we have a structure
+
+
+    typedef struct emp_{
+
+            char name[30];
+            unsigned int salary;
+            char designation[30];
+            unsigned int emp_id;
+
+            glthread_node_t glnode; // emp_ is the application data and we know that the glnode is a memeber of the application data
+     }emp_t;
+
+
+- Now I have a function which needs to print all the members of the emp_ given the pointer to the glthread_node_t
+
+            void print_emp_details(glthread_node_t* glnode)
+            {
+
+                // Now I need to get the starting address of the structure using the glnode and the struct emp_t
+                /*
+                    We have ways to do it
+
+                    - Calculate the offset in the structure and write the code with the offsets like if we want emp_id
+
+                        printf("%d",*((unsigned int )glnode - 4))) Taking the pointer to the start of the emp_id
+
+                    - Calculate the memebers offset and use it to move to the starting address using glnode
+
+                      emp_t *emp = (emp_t*)((unsigned int)glnode - offsetof members) 
+
+                    - Using the sizeof
+
+                      sizeof emp_ = size of members + size of the glnode
+
+                      size of the members = sizeof emp_ - sizeof the glnode
+
+                      starting address of structure = address of glnode - size of the members
+
+                      emp_t * emp = (emp_t*)((unsigned int)glnode - (sizeof(emp_t)- sizeof(glnode)))
+
+                    - We can use the offset macro
+
+                        emp_t* emp = (emp_t*)((unsigned int)glnode - offset(emp_t,glnode));
+
+                    Refer the structure_traversal.c
+
+                */    
+                return;
+            }
+
+            The Memory of the structure is with the starting address of the structure is 1000
+
+                - name        = 1000 + 0 = 1000
+                - salary      = 1000 + 30 = 1030
+                - desgination = 1000 + 30 + 4 = 1034
+                - emp_id      = 1000 + 30 + 4 + 30 = 1064
+                - glnode      = 1000 + 30 + 4 + 30 + 4 = 1068 ( address of the glnode )  
+
+
+- Refer the structure_traversal.c in this directory for the implementation
+
+- Now basicallly in glue based data structures the application data has the glnodes so that the data and the glthread nodes are together
+- So we use the glnode to get the application data using the offset and sizeof as implemented in the structure_traversal.call
+
+- So in glthread it is how we get the application data by obtaining the pointer to the glthread_node_t and how we traverse the data
+
+
+- Why we use Glthreads 
+
+    - Now in Traditional Data Structures let's say 
+
+        - We have an employee and this employee needs to be added to three DLL
+        - So to add the employee we create glnode using malloc in each DLL and the pointer that points the employee structure
+        - So if we want to remove then we have to traverse 3 DLL, then we free the employee structure from the memory 
+
+    - Now let's see this in the GLThreads Data Structures
+
+        - Now here the glnode is a member of the employee structure so we know that the employee should be in 3 DLL so we have 3 glnodes
+          in the employee structure
+        - So to add the employee to the DLL we need 0 malloc becuase the glnodes are created when the employee is created
+        - To remove the employee make sure to make the DLL pointers refer properly and then remove the glnodes by removing the employee 
+          then we can free the employee structure from the memory
+
+
+- So know when to use the Traditional List and Glue Based Lists
+
+
+
+
+
+
+
+
+
+
+

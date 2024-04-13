@@ -1,0 +1,73 @@
+- Iterative Macros
+
+    - To iterate data structures like Linked Lists, Trees we need to use Iterative Macros
+    - We basically use functions and iterate the data structures but using Iterative Macros is more readbale
+    - Iterative Macros makes Iteration on Data Structures easy
+
+
+- Iterating over a a Linked List
+        - Basic Approach
+
+                dll_node_t* current= dll->head;
+                while(current)
+                {
+                    current=current->next;
+                }
+
+        - Using Iterative Macros
+
+                ITERATE_LIST_(STARTlistptr,current){
+                    /* process on current node */
+                }ITERATE_LIST_ITR(listptr,current);
+
+
+- For Loop Semantics
+
+            for ( Intialization ; Condition ; Next Iteration ){
+            
+                Body;
+            
+            }
+                - Intialization only when the loop starts
+                - Condition, Body and Next Iteration are in loop
+
+- Now let's see how to write the for loop in iterative Macro
+
+    - Iterative Macro is a way to write for loop
+    - Remember we need to add \ for mutiple line Macros
+
+    #define ITERATE_LIST_START(list_ptr,node_ptr)   \       
+    {                                               \
+        dll_node_t* _node_ptr= NULL;                \
+        node_ptr=list_ptr->head;                    \
+        for(;node_ptr!=NULL;node_ptr=_node_ptr){    \
+                if(!node_ptr) break;                \
+            _node_ptr=node_ptr->right;              \
+
+    #define ITERATE_LIST_ITR }}            //This Macro is defined to balance the parantheses
+
+
+- Now let's write an Iterative Macro for traversing Trees using inorder traversal
+
+    Now the iterative soultion for that is using a queue data structure and pushing the nodes as we traverse
+
+    But for Iterative Macro we use two functions
+
+        tree_node_t* get_left_most(tree_node_t* root);
+        tree_node_t* get_next_inorder_successor(tree_node_t* node);
+
+
+    Now when we implement the two function now let's write the Iterative Macro
+
+    #define ITERATE_TREE_START(treeptr,currentnodeptr)  \
+    {                                                   \
+       tree_node_t* _next = NULL;
+       for(currentnodeptr=get_left_most(treeptr->root);currentnodeptr; currentnodeptr= _next) { \
+                        _next = get_next_inorder_successor(currentnodeptr);
+
+    #define ITERATE_TREE_ITR }}    
+
+- Use Iteratvie Macros for such traversing other than using the for loops
+
+    
+    

@@ -1,0 +1,12 @@
+- https://developer.ibm.com/articles/au-endianc/ - This has information about why Machine Endianness is needed
+
+- Big Endian - Network Byte Order - Higher Byte is stored in Lower Address
+
+- Little Endian - Host Byte Order - Higher Byte is stored in Higher Address
+
+
+- Endianness is the order of how bytes are stored in memory but bits in each byte are in order
+
+- Refer the Machine Endianness Picture in this directory
+
+

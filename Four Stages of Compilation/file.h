@@ -1,0 +1,1 @@
+#define SQUARE_DEFAULT_VALUE 12

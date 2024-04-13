@@ -1,0 +1,516 @@
+- Heap Memory Management
+
+    - Heap Memory of the process is the continuous part of
+      the Virtual Address Space of the process from which a
+      process claims and reclaims Memory during runtime,
+      called Dynamic Memory Allocation
+    
+    - glibc API's to harness the functionality of Heap
+        - glibc is C Standard Library 
+        - C Library Calls - malloc, calloc ,free and realloc
+        - System Calls - brk and sbrk
+
+    - In Stack Memory the memory is reclaimed when procedure
+      retunrs automatically, but in Heap Memory Management it is the programmer's responsibility to free the dynamic memory when used
+    
+    - malloc and calloc are used to allocate a block of
+      memory from the heap segment of the process
+
+    - free is used to release the memmory back to heap
+      segement which is claimed by malloc and calloc
+
+    - System Programmer should kow how dynamic memmory
+      allocation works
+
+- Malloc
+
+    - malloc and calloc in your program to assign memory
+      chunks dynamically to your process
+    
+    - malloc is a Standard C Library function that allocates
+      memory chunks from process Virtual Address Space,
+      particularly from Heap Memory
+
+    - malloc allocates the number of bytes requested
+
+    - The pointer returned by malloc pointes to an allocated
+      space, soace where the program can read and write,
+      remember the space here is the Virtual Address Space
+
+    - Other call to malloc will allocate the reserved space
+      or any portion of it when the space has been freed before
+
+    - malloc should also provide resizing and freeing which
+      provided by the realloc and free 
+
+
+
+- Now let's see how the operating systems manages the heap 
+  section of the process in Virtual Address Space using malloc and free
+
+    - Say we write
+
+            void* ptr = malloc(20); 
+
+    - ptr has an address, this address will be the starting
+      address of the memory block of the 20 bytes claimed using the malloc and remember that this address is in the Heap Memory of the Process Vrtual Address Space
+
+    - Now let's say now we write
+
+            - strncpy(ptr,"Hello",5);
+
+        - Now where is the data Hello going to be, in the    
+          Heap Memory of the Virtual Address Space of the Process
+    - Now we know that Heap Memory is a virtual concept in
+      the Virtual Address Space, but data should be present
+      in real physical entity
+
+    - We know that a Virtual Address is mapped to a Physical
+      Address on the Random Access Memory Chip using the MMU
+      with the Paging concept
+
+    - So ptr address which is Vitual Address is mapped to a
+      Physical Address and in this Physical Address the data
+      Hello is written
+
+
+    - Remember that actual data is written on Physical Memory
+    - Heap memory in Virtual Memory do not contain any data
+
+    - Refer Slide No - 211 in ALPC-PPT 
+
+
+- Break Pointer
+
+    - Break is the pointer maintained by the OS for a process,
+      it points to the top of the Heap Memory
+
+    - Memory above break pointer is Memory that Process will
+      not use
+
+    - Break Pointer moves towards the higher address when
+      process claims more Heap Memory
+
+    - break Pointer moves the other way when the memory is
+      freed from the Heap Memory 
+
+- brk and sbrk system calls
+
+    - Linux OS provide two system calls - brk and sbrk using
+      which we claim more memory from the Heap Segment
+
+
+    - brk
+
+        - int brk(const void* addr);
+
+            - brk() expands the heap memory such that break  
+              moves towards higher address and points to the
+              addr which is provided as argumernt, addr should
+              be a valid address
+
+            - Say
+
+                int rc = brk(0x12120d0);
+
+                - It means that the break pointer of the heap
+                  memory is moved to the given address in the argument expanding the memory given that the given address is valid
+
+                - So brk sets the break pointer to the
+                  given address in the argument in the heap memory
+    - sbrk
+
+        - void* sbrk(intptr_t incr);// incr is number of bytes
+
+            - sbrk() expands the heap memory such that the
+              break pointer moves towards higher memory by incr bytes which is given in the argument, It retunrs the old break pointer address
+
+            - Say
+
+                //Say break pointer address is 100
+                
+                void* ptr = sbrk(10);
+
+                // Now break pointer address  is 110 
+                // ( 100 + 10 )
+                // But the sbrk returns 100 which is the old
+                // break pointer address
+
+        - sbrk(0) - This expands the heap memory with 0 bytes
+                    and returns the break pointer which is the current break pointer address, this is used to get the current break pointer address
+
+- Now let's see how malloc works
+
+    - malloc library call which calls the sbrk system call
+    - malloc and calloc are functions that are given by the
+      standard C library
+    - They are functions that call sbrk system call
+    - malloc and calloc internally calls sbrk() to claim the
+      memory from heap memory
+    
+    - Basic implementation of malloc is written like
+
+        void* malloc(int size){
+
+            void* ptr;
+            ptr = sbrk(0); //get the current break pointer
+
+            if(sbrk(size)==NULL)
+                retunr NULL;
+
+            retunr ptr;
+        }
+    - Refer the ownmalloc-1.c for the basic implementation of
+      the ownmalloc and ownfree functions
+
+
+- Now let's write malloc and free
+
+    - Now say we write
+
+            //Say we have break pointer at 100 currently
+            
+            void* p1 = malloc(20);
+            void* p2 = malloc(10);
+            void* p3 = malloc(10);
+            void* p4 = malloc(15);
+            void* p5 = malloc(20);
+
+            // Now the break pointer is at 175
+
+            free(p3);
+
+            // Here we pass the pointer to the block 
+               allocated by the p3 pointer, but how will the
+               Operatin System know how many bytes to free
+               which is 10 bytes for p3 block
+
+    - So they are thigns to remember ( OS - Operating System )
+
+        - How OS would know how much memory to free on
+          invoking free(p3)
+
+        - How OS organizes the memory blocks assigned by
+          malloc
+            - OS needs to know that p3 is associated with
+              10 bytesof block memory and free(p3) should free 10bytes of memory
+
+        - How OS ensutes that p3 is valid memory address and
+          memory pointed by p3 is occupied and is freed already
+
+    - So let us understand the Memory Block Management which
+      understand how Heap Memory Management is done in Linux OS
+
+- Heap Memory Management in Linux OS
+
+    - Heap Memory is a contiguous memory chunk which
+      represents the Process Virtual Adress Space
+
+    - Process should alloacte chunks of memory by the
+      requested size from this heap memory when needed
+
+    - Process should reclaim the chunks of memory to the 
+      heap memory given the address of the chunk
+
+    - Other Data Structures to manage heap memory should not
+      be used because those Data Structures need seperate
+      memory
+
+- Let's see how we can implement this scheme
+
+    - We know that we should not use other Data Structures, we
+      manage the Heap Memory by using
+
+            - MetaBlock
+                - size of the DataBlock
+                - pointer to the next MetaBlock
+                - is_free - TRUE - current block is free 
+            - DataBlock
+                - malloc returns the pointer to the start of
+                  the DataBlock
+
+
+    - MetaBlock Structure - OS uses this to allocate and free 
+                            the heap memory
+
+            struct meta_block_t{
+
+                int size;
+                struct meta_block_t* next;
+                int is_free;
+            }
+
+    - The MetaBlock is created when we allocate the Block of
+      memory
+
+        Block of Memory = MetaBlock + Data Block + Padding  
+                                                   bytes
+
+        - MetaBlock size is fixed by the above structure
+        - DataBlock size is given in the arguments of malloc
+
+        - OS adds additional padding bytes to make the total
+          block size integer mutiple of 4, this is called
+          4 bytes alignment
+
+    - Now say we want to allocate 10 bytes of heap memory
+
+        - Say we have 32bit machine so the sizeof(int) - 4B
+
+            MetaBlock Size = 4 + 4 + 4 = 12B
+            DataBlock Size = 10B
+
+            Block Size = 10 + 12 = 22B  
+
+        - OS adds padding bytes 2B to make it 4 bytes 
+          alignment
+
+            Block Size = 22B + 2B = 24B
+
+        - But the process should have access to use the 10B 
+          it has allocated
+
+        - OS uses the metablock to allocate and free the heap
+          memory
+        
+        - We create the MetaBlock when we create the DataBlock
+          so other Data Structures are not used to manage the
+          Heap Memory
+
+        - Process does not know about the MetaBlock and does
+          not know about the Padding bytes
+
+    - Now let's see the implementation of malloc
+
+            void* malloc(int size){
+
+                struct meta_block_t* p;
+
+                p = (struct meta_block_t*)sbrk(0);
+
+                if(sbrk(size + sizeof(sruct meta_block_t))==NULL)
+                    return NULL;
+                
+                p->size=size;
+                p->next=NULL;
+                p->is_free = 0;
+
+                return p+1; // return the starting address of 
+                            // the DataBlock 
+
+            }
+
+- Now in next discussion we do not take 4 byte alignment
+
+- Allocations and Freeing
+
+    - Allocation
+
+        - void* ptr1 = malloc(14);
+            Block1 - MetaBlock + DataBlock + PaddingBytes
+                   - 12 + 14 + 2
+                   - metablock size = 14
+                   - metablock next = NULL // This is update to Block2 when Block2 is created
+                   - metablock is_free = 0 
+        
+        - void * ptr2 = malloc(16);
+            Block2 - 12 + 16 + 0
+                   - metablock size = 16
+                   - metablock next = NULL // This us updated to Block3 when Block3 is created
+                   - metablock is_free = 0  
+
+        - void* ptr3 = malloc(20);
+            Block2 - 12 + 20 + 0
+                   - metablock size = 20
+                   - metablock next = NULL // This us updated to Block4 when Block4 is created
+                   - metablock is_free = 0  
+
+        - void* ptr4 = malloc(16);
+            Block2 - 12 + 16 + 0
+                   - metablock size = 16
+                   - metablock next = NULL // This us updated to Block5 when Block5 is created
+                   - metablock is_free = 0  
+        
+        - void* ptr5 = malloc(20);
+            Block2 - 12 + 20 + 0
+                   - metablock size = 20
+                   - metablock next = NULL
+                   - metablock is_free = 0  
+
+        - free(ptr2)
+            - Now we go to the ptr2 address then 
+                - We do ptr2 - sizeof(struct meta_block_t) to 
+                  reach the starting address of the meta block
+                - Now we know how much to free, but for
+                  freeing we set the is_free = 1 so that this
+                  block can be used for next allocations
+
+        - free(ptr4)
+            - Set the is_free = 1 in the meta block of this
+              block
+
+- Block Splitting
+
+    - Now say we have a snapshot of the Heap Memory
+
+        Block = MetaBlock + DataBlock + Padding Bytes
+
+        Block1 = 12 + 14 + 2
+        Block2 = 12 + 30 + 2 ( free )
+        Block3 = 12 + 20 + 0
+        Block4 = 12 + 16 + 0 ( free )
+        BLock5 = 12 + 20 + 0
+
+    - Now we have 
+
+        void * ptr = malloc(10);
+
+    - Now the MetaBlocks are traversed and see if the
+      requested size can be given
+
+    - We see that the Block2 is free and the requested size
+      can be given
+
+        - So now the Block2 is split into two Blocks
+
+            - old Block2 split into new Block3 and new Block4
+
+                - New Block3 = 12 + 10 + 2
+                - New Block4 = 12 + 8 + 0 ( free )
+
+            - The MetaBlock next pointers are set accordingly
+    - The MetaBlocks are similar to Linked List
+
+    - Now when malloc is called for sizes like 2,4,6,8
+      then we create more metablocks where the size of
+      metablock is more than the size of datablock, so we
+      do not use malloc for these sizes but use malloc for
+      allocating larger chunks of heap memory
+
+
+- Block Merging
+
+    - Merging consecutive free block to create a larger chunk 
+      of free block so that next malloc requests are given memory
+
+    - Now say we have the snapshot
+        Block = MetaBlock + DataBlock + Padding Bytes
+
+        Block1 = 12 + 14 + 2
+        Block2 = 12 + 10 + 2 
+        Block3 = 12 + 6 + 2 ( free )
+        BLock4 = 12 + 20 + 0
+        Block5 = 12 + 16 + 0 ( free )
+        BLock6 = 12 + 20 + 0
+
+    - Now say we
+
+            free(ptr2)
+
+    - Then the snapshot is
+       Block = MetaBlock + DataBlock + Padding Bytes
+
+        Block1 = 12 + 14 + 2
+        Block2 = 12 + 10 + 2 (free)
+        Block3 = 12 + 6 + 2 ( free )
+        BLock4 = 12 + 20 + 0
+        Block5 = 12 + 16 + 0 ( free )
+        BLock6 = 12 + 20 + 0
+
+    - Now the heap memory has consecutive blocks so they are
+      merged, so now the snapshot
+       Block = MetaBlock + DataBlock + Padding Bytes
+
+        Block1 = 12 + 14 + 2
+        Block2 = 12 + 32 + 0 (free)  // How 32 - Add the old Block Data Block and Padding bytes and the Block3 bytes and now they are the Data Block size for the new Block, if it does not has 4 byte alignment say in this case we got 32 which is 4 byte aligned , but say we  got 31 then Data Block would be 28 and 3 Padding Bytes, we do not add new padding bytes because we should not use the other Blocks, to inroduce new padding bytes we have to use the Block3 bytes which we should not do
+        BLock3 = 12 + 20 + 0
+        Block4 = 12 + 16 + 0 ( free )
+        BLock5 = 12 + 20 + 0
+       
+    - This is how Block Merging is done
+
+- Fragmentation
+
+    - Say we have a snapshot
+       Block = MetaBlock + DataBlock + Padding Bytes
+
+        Block1 = 12 + 14 + 2
+        Block2 = 12 + 16 + 0 (free)
+        BLock3 = 12 + 20 + 0
+        Block5 = 12 + 16 + 0 ( free )
+
+    - Now say we get a request malloc(20)
+        - We have two 16B which is 32B free block but because
+          they are not contiguous we do not use the blocks
+        - But to allocate this we need to expand our heap
+          memory and create a new block of DataBlock of 20bytes 
+
+    - This is called Fragmentation
+
+    - There is Internal Fragmentation and External 
+      Fragmentation
+
+
+    - Internal Fragmentation
+
+        - Say we have a snapshot
+            Block = MetaBlock + DataBlock + Padding Bytes
+
+            Block1 = 12 + 14 + 2
+            Block2 = 12 + 30 + 2 ( free )
+            Block3 = 12 + 20 + 0
+            Block4 = 12 + 16 + 0 ( free )
+            BLock5 = 12 + 20 + 0
+
+        - Now we get a request malloc(10)
+
+            - So the Block2 is split and now we have a 
+              snapshot
+                Block = MetaBlock + DataBlock + Padding Bytes
+
+                Block1 = 12 + 14 + 2
+                Block2 = 12 + 10 + 2
+                Block3 = 12 + 8 + 0 ( free )
+                Block4 = 12 + 20 + 0
+                Block5 = 12 + 16 + 0 ( free )
+                BLock6 = 12 + 20 + 0
+
+        - Now the Block3 do not give memory to request where
+          the size is greater than 8B
+        
+        - So this Block is Internally Fragemented beacause of 
+          Block splitting and this is called Internal Fragmentation
+    
+    - External Fragmentation
+
+        - Say we have a snapshot
+            Block = MetaBlock + DataBlock + Padding Bytes
+
+            Block1 = 12 + 14 + 2
+            Block2 = 12 + 16 + 0 (free)
+            BLock3 = 12 + 20 + 0
+            Block5 = 12 + 16 + 0 ( free )
+
+        - Now say we get a request malloc(20)
+            - We have two 16B which is 32B free block but  
+              because they are not contiguous we do not use the blocks
+            - But to allocate this we need to expand our heap
+              memory and create a new block of DataBlock of 20bytes 
+
+        - This is called External Fragmentation, this occurs because we have free blocks which are non contiguous
+
+- This is Heap Memory Management
+
+
+
+
+
+
+
+
+
+
+
+
+
+
